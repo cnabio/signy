@@ -3,7 +3,7 @@
 Signy is a tool for exercising the TUF specification in order to sign various cloud-native artifacts. It uses the Notary client libraries, and communicates with a Notary server.
 It an educational project with the purpose of implementing [the entire TUF workflow for signing content](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#5-detailed-workflows), and validate its correctness for multiple cloud-native artifact types (Helm charts, CNAB bundles, and others).
 
-# Using Signy
+## Using Signy
 
 For now, you can only list all targets for a remote trusted collection:
 
@@ -41,7 +41,7 @@ $ ./bin/signy --tlscacert=<TLS CA> --server <URL of trust server> list hellosign
 0.1.0	dcd5b548984cfddee4dd9b467bd9c70606cd1d5ebbdd0dba0290ff147db24ea3
 ```
 
-# Building from source and using
+## Building from source
 
 ```
 $ make bootstrap build
