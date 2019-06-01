@@ -3,7 +3,6 @@ package trust
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,40 +12,9 @@ import (
 	"github.com/docker/distribution/registry/client/auth"
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/docker/distribution/registry/client/transport"
-	"github.com/theupdateframework/notary/client"
-	"github.com/theupdateframework/notary/trustpinning"
-	"github.com/theupdateframework/notary/tuf/data"
 )
 
-// PrintTargets prints all the targets for a specific GUN from a trust server
-func PrintTargets(gun, trustServer, tlscacert, trustDir string) {
-	if err := os.MkdirAll(trustDir, 0700); err != nil {
-		panic(err)
-	}
-
-	repo, err := client.NewFileCachedRepository(
-		trustDir,
-		data.GUN(gun),
-		trustServer,
-		makeTransport(trustServer, gun, tlscacert),
-		nil,
-		trustpinning.TrustPinConfig{},
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	targets, err := repo.ListTargets()
-	if err != nil {
-		panic(err)
-	}
-
-	for _, tgt := range targets {
-		fmt.Printf("%s\t%s\n", tgt.Name, hex.EncodeToString(tgt.Hashes["sha256"]))
-	}
-}
-
-func makeTransport(server, reference, tlsCaCert string) http.RoundTripper {
+func makeTransport(server, reference, tlsCaCert string) (http.RoundTripper, error) {
 	modifiers := []transport.RequestModifier{
 		transport.NewHeaderRequestModifier(http.Header{
 			"User-Agent": []string{"signy"},
@@ -57,7 +25,7 @@ func makeTransport(server, reference, tlsCaCert string) http.RoundTripper {
 	if tlsCaCert != "" {
 		caCert, err := ioutil.ReadFile(tlsCaCert)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("cannot read cert file: %v", err)
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
@@ -75,20 +43,24 @@ func makeTransport(server, reference, tlsCaCert string) http.RoundTripper {
 	}
 	req, err := http.NewRequest("GET", server+"/v2/", nil)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("cannot create HTTP request: %v", err)
 	}
 
 	challengeManager := challenge.NewSimpleManager()
 	resp, err := pingClient.Do(req)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("cannot get response from ping client: %v", err)
 	}
 	defer resp.Body.Close()
 	if err := challengeManager.AddResponse(resp); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("cannot add response to challenge manager: %v", err)
 	}
 	tokenHandler := auth.NewTokenHandler(base, nil, reference, "pull")
 	modifiers = append(modifiers, auth.NewAuthorizer(challengeManager, tokenHandler, auth.NewBasicHandler(nil)))
 
-	return transport.NewTransport(base, modifiers...)
+	return transport.NewTransport(base, modifiers...), nil
+}
+
+func ensureTrustDir(trustDir string) error {
+	return os.MkdirAll(trustDir, 0700)
 }

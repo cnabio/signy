@@ -20,7 +20,10 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(newListCmd())
+	rootCmd.AddCommand(
+		newListCmd(),
+		newSignCmd(),
+	)
 
 	rootCmd.PersistentFlags().StringVarP(&trustServer, "server", "", "https://notary.docker.io", "The trust server used")
 	rootCmd.PersistentFlags().StringVarP(&tlscacert, "tlscacert", "", "", "Trust certs signed only by this CA")
