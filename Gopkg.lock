@@ -193,13 +193,14 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:a5702d6fd0891671faf050c05451d3ee4cfd70cb958e11556fefaca628ce832e"
+  digest = "1:3b65d4044b1331df2a369f8e75eef5972eb0c28a90159d25e317db2cee95a3b6"
   name = "github.com/theupdateframework/notary"
   packages = [
     ".",
     "client",
     "client/changelist",
     "cryptoservice",
+    "passphrase",
     "storage",
     "trustmanager",
     "trustmanager/yubikey",
@@ -216,17 +217,23 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f92f6956e4059f6a3efc14924d2dd58ba90da25cc57fe07ae3779ef2f5e0c5f2"
+  digest = "1:35ce874cf16f78a2da908ab28b0277497e36603d289db00d39da5200bc8ace08"
   name = "golang.org/x/crypto"
-  packages = ["pbkdf2"]
+  packages = [
+    "pbkdf2",
+    "ssh/terminal",
+  ]
   pruneopts = "UT"
   revision = "22d7a77e9e5f409e934ed268692e56707cd169e5"
 
 [[projects]]
   branch = "master"
-  digest = "1:9ca267f99487ef450fff0c2a49eaf0788d9ff3562bbaeff19f564d380f84bc6d"
+  digest = "1:94c860578f679ed05a51f2062266ed10a2a4fa7f79987cad7e1556b2d33d9a37"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows",
+  ]
   pruneopts = "UT"
   revision = "9cd6430ef91e39e1a0ec0470cf1321a33ef1b887"
 
@@ -238,9 +245,14 @@
     "github.com/docker/distribution/registry/client/auth/challenge",
     "github.com/docker/distribution/registry/client/transport",
     "github.com/spf13/cobra",
+    "github.com/theupdateframework/notary",
     "github.com/theupdateframework/notary/client",
+    "github.com/theupdateframework/notary/cryptoservice",
+    "github.com/theupdateframework/notary/passphrase",
+    "github.com/theupdateframework/notary/trustmanager",
     "github.com/theupdateframework/notary/trustpinning",
     "github.com/theupdateframework/notary/tuf/data",
+    "github.com/theupdateframework/notary/tuf/utils",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

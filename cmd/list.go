@@ -26,6 +26,5 @@ func newListCmd() *cobra.Command {
 }
 
 func (l *listCmd) run() error {
-	trust.PrintTargets(l.gun, trustServer, tlscacert, trustDir)
-	return nil
+	return trust.PrintTargets(l.gun, trustServer, tlscacert, trustDir)
 }
