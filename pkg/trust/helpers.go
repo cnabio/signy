@@ -177,7 +177,6 @@ func readKey(role data.RoleName, keyFilename string, retriever notary.PassRetrie
 }
 
 func getPassphraseRetriever() notary.PassRetriever {
-	fmt.Printf("RETRIEVER")
 	baseRetriever := passphrase.PromptRetriever()
 	env := map[string]string{
 		"root":       os.Getenv("SIGNY_ROOT_PASSPHRASE"),
