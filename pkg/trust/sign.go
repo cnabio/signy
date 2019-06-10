@@ -9,7 +9,7 @@ import (
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublish(trustDir, trustServer, gun, tlscacert, rootKey string) error {
+func SignAndPublish(trustDir, trustServer, gun, file, tlscacert, rootKey string) error {
 	if err := ensureTrustDir(trustDir); err != nil {
 		return fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
@@ -46,5 +46,18 @@ func SignAndPublish(trustDir, trustServer, gun, tlscacert, rootKey string) error
 		return fmt.Errorf("ERROR: %v", err)
 	}
 
-	return nil
+	target, err := client.NewTarget(gun, file, nil)
+	if err != nil {
+		return err
+	}
+
+	// TODO - Radu M
+	// decide whether to allow actually passing roles as flags
+
+	// If roles is empty, we default to adding to targets
+	if err = repo.AddTarget(target, data.NewRoleList([]string{})...); err != nil {
+		return err
+	}
+
+	return repo.Publish()
 }

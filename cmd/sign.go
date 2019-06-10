@@ -32,5 +32,5 @@ func newSignCmd() *cobra.Command {
 }
 
 func (s *signCmd) run() error {
-	return trust.SignAndPublish(trustDir, trustServer, s.gun, tlscacert, s.rootKey)
+	return trust.SignAndPublish(trustDir, trustServer, s.gun, s.file, tlscacert, s.rootKey)
 }
