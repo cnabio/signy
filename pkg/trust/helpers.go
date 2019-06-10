@@ -9,7 +9,6 @@ package trust
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -121,34 +120,34 @@ func importRootKey(rootKey string, nRepo client.Repository, retriever notary.Pas
 	return []string{}, nil
 }
 
-// importRootCert imports the base64 encoded public certificate corresponding to the root key
-// returns empty slice if path is empty
-func importRootCert(certFilePath string) ([]data.PublicKey, error) {
-	publicKeys := make([]data.PublicKey, 0, 1)
+// // importRootCert imports the base64 encoded public certificate corresponding to the root key
+// // returns empty slice if path is empty
+// func importRootCert(certFilePath string) ([]data.PublicKey, error) {
+// 	publicKeys := make([]data.PublicKey, 0, 1)
 
-	if certFilePath == "" {
-		return publicKeys, nil
-	}
+// 	if certFilePath == "" {
+// 		return publicKeys, nil
+// 	}
 
-	// read certificate from file
-	certPEM, err := ioutil.ReadFile(certFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("error reading certificate file: %v", err)
-	}
-	block, _ := pem.Decode([]byte(certPEM))
-	if block == nil {
-		return nil, fmt.Errorf("the provided file does not contain a valid PEM certificate %v", err)
-	}
+// 	// read certificate from file
+// 	certPEM, err := ioutil.ReadFile(certFilePath)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error reading certificate file: %v", err)
+// 	}
+// 	block, _ := pem.Decode([]byte(certPEM))
+// 	if block == nil {
+// 		return nil, fmt.Errorf("the provided file does not contain a valid PEM certificate %v", err)
+// 	}
 
-	// convert the file to data.PublicKey
-	cert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("Parsing certificate PEM bytes to x509 certificate: %v", err)
-	}
-	publicKeys = append(publicKeys, utils.CertToKey(cert))
+// 	// convert the file to data.PublicKey
+// 	cert, err := x509.ParseCertificate(block.Bytes)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("Parsing certificate PEM bytes to x509 certificate: %v", err)
+// 	}
+// 	publicKeys = append(publicKeys, utils.CertToKey(cert))
 
-	return publicKeys, nil
-}
+// 	return publicKeys, nil
+// }
 
 // Attempt to read a role key from a file, and return it as a data.PrivateKey
 // If key is for the Root role, it must be encrypted
