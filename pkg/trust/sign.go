@@ -2,6 +2,7 @@ package trust
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
@@ -9,10 +10,17 @@ import (
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublish(trustDir, trustServer, gun, file, tlscacert, rootKey string) error {
+func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string) error {
 	if err := ensureTrustDir(trustDir); err != nil {
 		return fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
+
+	parts := strings.Split(ref, ":")
+	gun := parts[0]
+	if len(parts) == 1 {
+		parts = append(parts, "latest")
+	}
+	name := parts[1]
 
 	transport, err := makeTransport(trustServer, gun, tlscacert)
 	if err != nil {
@@ -27,7 +35,6 @@ func SignAndPublish(trustDir, trustServer, gun, file, tlscacert, rootKey string)
 		getPassphraseRetriever(),
 		trustpinning.TrustPinConfig{},
 	)
-
 	if err != nil {
 		return fmt.Errorf("cannot create new file cached repository: %v", err)
 	}
@@ -37,16 +44,26 @@ func SignAndPublish(trustDir, trustServer, gun, file, tlscacert, rootKey string)
 		return fmt.Errorf("cannot clear change list: %v", err)
 	}
 
-	rootKeyIDs, err := importRootKey(rootKey, repo, getPassphraseRetriever())
-	if err != nil {
-		return err
+	defer clearChangeList(repo)
+
+	if _, err = repo.ListTargets(); err != nil {
+		switch err.(type) {
+		case client.ErrRepoNotInitialized, client.ErrRepositoryNotExist:
+			rootKeyIDs, err := importRootKey(rootKey, repo, getPassphraseRetriever())
+			if err != nil {
+				return err
+			}
+
+			if err = repo.Initialize(rootKeyIDs); err != nil {
+				return fmt.Errorf("cannot initialize repo: %v", err)
+			}
+
+		default:
+			return fmt.Errorf("cannot list targets: %v", err)
+		}
 	}
 
-	if err = repo.Initialize(rootKeyIDs); err != nil {
-		return fmt.Errorf("ERROR: %v", err)
-	}
-
-	target, err := client.NewTarget(gun, file, nil)
+	target, err := client.NewTarget(name, file, nil)
 	if err != nil {
 		return err
 	}
