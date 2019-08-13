@@ -44,3 +44,11 @@ ifndef HAS_GOIMPORTS
 	go get -u golang.org/x/tools/cmd/goimports
 endif
 	dep ensure -vendor-only -v
+
+.PHONY: e2e
+e2e:
+	make e2e-list
+
+.PHONY: e2e-list
+e2e-list:
+	./bin/signy list docker.io/library/alpine
