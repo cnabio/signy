@@ -12,9 +12,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/docker/cli/cli/config"
+	"github.com/docker/cli/cli/config/types"
 	"github.com/docker/distribution/registry/client/auth"
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/docker/distribution/registry/client/transport"
@@ -27,7 +31,12 @@ import (
 	"github.com/theupdateframework/notary/tuf/utils"
 )
 
-func makeTransport(server, reference, tlsCaCert string) (http.RoundTripper, error) {
+const (
+	configFileDir      = ".docker"
+	defaultIndexServer = "https://index.docker.io/v1/"
+)
+
+func makeTransport(server, gun, tlsCaCert string) (http.RoundTripper, error) {
 	modifiers := []transport.RequestModifier{
 		transport.NewHeaderRequestModifier(http.Header{
 			"User-Agent": []string{"signy"},
@@ -68,8 +77,15 @@ func makeTransport(server, reference, tlsCaCert string) (http.RoundTripper, erro
 	if err := challengeManager.AddResponse(resp); err != nil {
 		return nil, fmt.Errorf("cannot add response to challenge manager: %v", err)
 	}
-	tokenHandler := auth.NewTokenHandler(base, nil, reference, "pull")
-	modifiers = append(modifiers, auth.NewAuthorizer(challengeManager, tokenHandler, auth.NewBasicHandler(nil)))
+
+	defaultAuth, err := getDefaultAuth()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get default credentials: %v", err)
+	}
+
+	creds := simpleCredentialStore{auth: defaultAuth}
+	tokenHandler := auth.NewTokenHandler(base, creds, gun, "push", "pull")
+	modifiers = append(modifiers, auth.NewAuthorizer(challengeManager, tokenHandler))
 
 	return transport.NewTransport(base, modifiers...), nil
 }
@@ -198,4 +214,28 @@ func getPassphraseRetriever() notary.PassRetriever {
 		}
 		return baseRetriever(keyName, alias, createNew, numAttempts)
 	}
+}
+
+func getDefaultAuth() (types.AuthConfig, error) {
+	cfg, err := config.Load(filepath.Join(os.Getenv("HOME"), configFileDir))
+	if err != nil {
+		return types.AuthConfig{}, err
+	}
+
+	return cfg.AuthConfigs[defaultIndexServer], nil
+}
+
+type simpleCredentialStore struct {
+	auth types.AuthConfig
+}
+
+func (scs simpleCredentialStore) Basic(u *url.URL) (string, string) {
+	return scs.auth.Username, scs.auth.Password
+}
+
+func (scs simpleCredentialStore) RefreshToken(u *url.URL, service string) string {
+	return scs.auth.IdentityToken
+}
+
+func (scs simpleCredentialStore) SetRefreshToken(*url.URL, string, string) {
 }
