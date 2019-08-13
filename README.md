@@ -1,5 +1,7 @@
 # Signy
 
+[![Build Status](https://dev.azure.com/engineerd-dev/signy/_apis/build/status/engineerd.signy?branchName=master)](https://dev.azure.com/engineerd-dev/signy/_build/latest?definitionId=5&branchName=master)
+
 Signy is a tool for exercising the TUF specification in order to sign various cloud-native artifacts. It uses the Notary client libraries, and communicates with a Notary server.
 It an educational project with the purpose of implementing [the entire TUF workflow for signing content](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#5-detailed-workflows), and validate its correctness for multiple cloud-native artifact types (Helm charts, CNAB bundles, and others).
 
