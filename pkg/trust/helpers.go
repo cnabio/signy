@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/docker/cli/cli/config"
@@ -217,12 +218,21 @@ func getPassphraseRetriever() notary.PassRetriever {
 }
 
 func getDefaultAuth() (types.AuthConfig, error) {
-	cfg, err := config.Load(filepath.Join(os.Getenv("HOME"), configFileDir))
+	cfg, err := config.Load(defaultCfgDir())
 	if err != nil {
 		return types.AuthConfig{}, err
 	}
 
 	return cfg.AuthConfigs[defaultIndexServer], nil
+}
+
+func defaultCfgDir() string {
+	homeEnvPath := os.Getenv("HOME")
+	if homeEnvPath == "" && runtime.GOOS == "windows" {
+		homeEnvPath = os.Getenv("USERPROFILE")
+	}
+
+	return filepath.Join(homeEnvPath, configFileDir)
 }
 
 type simpleCredentialStore struct {

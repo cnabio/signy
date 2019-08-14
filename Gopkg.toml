@@ -2,6 +2,15 @@
   name = "github.com/spf13/cobra"
   version = "0.0.4"
 
+[[constraint]]
+  name = "github.com/docker/cnab-to-oci"
+  source = "github.com/radu-matei/cnab-to-oci"
+  branch = "canonical"
+
+[[constraint]]
+  name = "github.com/docker/distribution"
+  revision = "83389a148052d74ac602f5f1d62f86ff2f3c4aa5"
+
 [prune]
   go-tests = true
   unused-packages = true

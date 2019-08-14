@@ -23,6 +23,7 @@ func init() {
 	rootCmd.AddCommand(
 		newListCmd(),
 		newSignCmd(),
+		newVerifyCmd(),
 	)
 
 	rootCmd.PersistentFlags().StringVarP(&trustServer, "server", "", "https://notary.docker.io", "The trust server used")
