@@ -3,7 +3,9 @@
 [![Build Status](https://dev.azure.com/engineerd-dev/signy/_apis/build/status/engineerd.signy?branchName=master)](https://dev.azure.com/engineerd-dev/signy/_build/latest?definitionId=5&branchName=master)
 
 Signy is a tool for exercising the TUF specification in order to sign various cloud-native artifacts. It uses the Notary client libraries, and communicates with a Notary server.
-It an educational project with the purpose of implementing [the entire TUF workflow for signing content](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#5-detailed-workflows), and validate its correctness for multiple cloud-native artifact types (Helm charts, CNAB bundles, and others).
+It is an educational project with the purpose of implementing [the entire TUF workflow for signing content](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#5-detailed-workflows), and validate its correctness for multiple cloud-native artifact types (Helm charts, CNAB bundles, and others).
+
+Currently, it implements signing and verifying for plain text and CNAB bundles.
 
 ## Using Signy
 
@@ -13,29 +15,13 @@ Operations:
 
 ```
 $ signy list docker.io/library/alpine
-2.6	9ace551613070689a12857d62c30ef0daa9a376107ec0fff0e34786cedb3399b
-3.9.3	28ef97b8686a0b5399129e9b763d5b7e5ff03576aa5580d6f4182a49c5fe1913
-latest	769fddc7cc2f0a1c35abb2f91432e8beecf83916c421420e6a6da9f8975464b6
-2.7	9f08005dff552038f0ad2f46b8e65ff3d25641747d3912e3ea8da6785046561a
-3.9.4	769fddc7cc2f0a1c35abb2f91432e8beecf83916c421420e6a6da9f8975464b6
-3.1	4dfc68bc95af5c1beb5e307133ce91546874dcd0d880736b25ddbe6f483c65b4
-3.5	66952b313e51c3bd1987d7c4ddf5dba9bc0fb6e524eed2448fa660246b3e76ec
-integ-test-base	3952dc48dcc4136ccdde37fbef7e250346538a55a0366e3fccc683336377e372
-3.4	b733d4a32c4da6a00a84df2ca32791bb03df95400243648d8c539e7b4cce329c
-3.9	769fddc7cc2f0a1c35abb2f91432e8beecf83916c421420e6a6da9f8975464b6
-3.3	6bff6f65597a69246f79233ef37ff0dc50d97eaecbabbe4f8a885bf358be1ecf
-3.8	ea47a59a33f41270c02c8c7764e581787cf5b734ab10d27e876e62369a864459
-3.6	66790a2b79e1ea3e1dabac43990c54aca5d1ddf268d9a5a0285e4167c8b24475
-3.7	02c076fdbe7d116860d9fb10f856ed6753a50deecb04c65443e2c6388d97ee35
-3.7.3	02c076fdbe7d116860d9fb10f856ed6753a50deecb04c65443e2c6388d97ee35
-20190508	db9c935c5445f75cace46d0418fac19d0b70b1723193e3b47d0d06bcddd05272
-20190408	8b6b8c0f71e83cdbf888169bdd9b89f028cba03abff05c50246a191fec31b35a
-3.2	e9a2035f9d0d7cee1cdd445f5bfa0c5c646455ee26f14565dce23cf2d2de7570
-3.6.5	66790a2b79e1ea3e1dabac43990c54aca5d1ddf268d9a5a0285e4167c8b24475
-3.8.4	ea47a59a33f41270c02c8c7764e581787cf5b734ab10d27e876e62369a864459
-20190228	6199d795f07e4520fa0169efd5779dcf399cbfd33c73e15b482fcd21c42e1750
-3.9.2	644fcb1a676b5165371437feaa922943aaf7afcfa8bfee4472f6860aad1ef2a0
-edge	db9c935c5445f75cace46d0418fac19d0b70b1723193e3b47d0d06bcddd05272
+
+3.5     66952b313e51c3bd1987d7c4ddf5dba9bc0fb6e524eed2448fa660246b3e76ec
+3.8     04696b491e0cc3c58a75bace8941c14c924b9f313b03ce5029ebbc040ed9dcd9
+3.2     e9a2035f9d0d7cee1cdd445f5bfa0c5c646455ee26f14565dce23cf2d2de7570
+3.6     66790a2b79e1ea3e1dabac43990c54aca5d1ddf268d9a5a0285e4167c8b24475
+3.10    6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
+3.9.4   7746df395af22f04212cd25a92c1d6dbc5a06a0ca9579a229ef43008d4d1302a
 ```
 
 Or, if your trust server is running in a different location, you can pass its URL and TLS CA:
@@ -48,7 +34,7 @@ $ ./bin/signy --tlscacert=<TLS CA> --server <URL of trust server> list hellosign
 - signing a new file and publishing to a trust server:
 
 ```
-$ ./bin/signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign Makefile signy-collection
+$ signy sign --tlscacert=$NOTARY_CA --server https://localhost:4443 --type plaintext Makefile signy-collection
 You are about to create a new root signing key passphrase. This passphrase
 will be used to protect the most sensitive key in your signing system. Please
 choose a long, complex passphrase and be careful to keep the password and the
@@ -61,7 +47,11 @@ Enter passphrase for new targets key with ID 0dd3549:
 Repeat passphrase for new targets key with ID 0dd3549: 
 Enter passphrase for new snapshot key with ID 6e4ee53: 
 Repeat passphrase for new snapshot key with ID 6e4ee53: 
+```
 
+At this point, you can investigate the contents of the `~/.signy` directory:
+
+```
 signy$ tree ~/.signy/
 /home/radu/.signy/
 ├── private
@@ -106,12 +96,61 @@ signy$ cat ~/.signy/tuf/signy-collection/metadata/targets.json | jq
     }
   ]
 }
-radu:signy$ ./bin/signy --tlscacert=$NOTARY_CA --server https://localhost:4443 list signy-collection
+
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 list signy-collection
 signy-collection        1fccd3686cfd3faec79514958a76b6c54c952431b1d833c1db7508418af1c610
 
 signy$ sha256sum Makefile 
 1fccd3686cfd3faec79514958a76b6c54c952431b1d833c1db7508418af1c610  Makefile
+```
 
+On the first push to a repository, it also generates the signing keys.
+To avoid introducing the passphrases every time, set the following environment variables with the corresponding passphrases:
+
+```
+export SIGNY_ROOT_PASSPHRASE
+export SIGNY_TARGETS_PASSPHRASE
+export SIGNY_SNAPSHOT_PASSPHRASE
+export SIGNY_DELEGATION_PASSPHRASE
+```
+
+- computing the SHA256 digest of a canonical CNAB bundle, pushing it to the trust server, then pushing the bundle using `cnab-to-oci`:
+
+```
+$ signy sign --type cnab bundle.json docker.io/<user>/<repo>:<tag>
+Root key found, using: d701ba005e6d217c7eb6cb56dbc6cf0bd81f41347927acbca1318131cc693fc9
+
+Pushed trust data for docker.io/<user>/<repo>:<tag>: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+Starting to copy image cnab/helloworld:0.1.1...
+Completed image cnab/helloworld:0.1.1 copy
+
+Generated relocation map: bundle.ImageRelocationMap{"cnab/helloworld:0.1.1":"docker.io/radumatei/signed-cnab-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
+Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71ad1289cca45e661153fc9a46e"
+```
+
+- verifying the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry
+
+```
+$ signy verify --type cnab docker.io/<user>/<repo>:<tag>
+Pulled trust data for docker.io/<user>/<repo>:<tag>, with role targets - SHA256: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+Pulling bundle from registry: docker.io/<user>/<repo>:<tag>
+Relocation map map[cnab/helloworld:0.1.1:radumatei/signed-cnab@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6]
+
+Computed SHA: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+The SHA sums are equal: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+```
+
+- verifying the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry and against a local file
+
+```
+$ signy verify --type cnab --local bundle.json docker.io/<user>/<repo>:<tag>
+Pulled trust data for docker.io/<user>/<repo>:<tag>, with role targets - SHA256: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+Pulling bundle from registry: docker.io/<user>/<repo>:<tag>
+Relocation map map[cnab/helloworld:0.1.1:radumatei/signed-cnab@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6]
+
+Computed SHA: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+Computed SHA: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+The SHA sums are equal: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
 ```
 
 ## Building from source
