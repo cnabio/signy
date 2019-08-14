@@ -1,9 +1,13 @@
 package main
 
 import (
-	"github.com/engineerd/signy/pkg/trust"
+	"encoding/hex"
+	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/engineerd/signy/pkg/cnab"
+	"github.com/engineerd/signy/pkg/trust"
 )
 
 type signCmd struct {
@@ -32,5 +36,18 @@ func newSignCmd() *cobra.Command {
 }
 
 func (s *signCmd) run() error {
-	return trust.SignAndPublish(trustDir, trustServer, s.gun, s.file, tlscacert, s.rootKey)
+	switch s.artifactType {
+	case "plaintext":
+		_, err := trust.SignAndPublish(trustDir, trustServer, s.gun, s.file, tlscacert, s.rootKey)
+		return err
+	case "cnab":
+		target, err := trust.SignAndPublish(trustDir, trustServer, s.gun, s.file, tlscacert, s.rootKey)
+		if err != nil {
+			return fmt.Errorf("cannot sign and publish trust data: %v", err)
+		}
+		fmt.Printf("\nPushed trust data for %v: %v\n", s.gun, hex.EncodeToString(target.Hashes["sha256"]))
+		return cnab.Push(s.file, s.gun)
+	default:
+		return fmt.Errorf("unknown type")
+	}
 }

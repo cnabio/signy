@@ -1,0 +1,1 @@
+{"description":"A short description of your bundle","invocationImages":[{"image":"cnab/helloworld:0.1.1","imageType":"docker","size":42}],"keywords":["helloworld","cnab","tutorial"],"maintainers":[{"email":"jane.doe@example.com","name":"Jane Doe","url":"https://example.com"}],"name":"helloworld","schemaVersion":"v1.0.0-WD","version":"0.1.1"}

@@ -10,9 +10,9 @@ import (
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string) error {
+func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string) (*client.Target, error) {
 	if err := ensureTrustDir(trustDir); err != nil {
-		return fmt.Errorf("cannot ensure trust directory: %v", err)
+		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
 	parts := strings.Split(ref, ":")
@@ -24,7 +24,7 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string)
 
 	transport, err := makeTransport(trustServer, gun, tlscacert)
 	if err != nil {
-		return fmt.Errorf("cannot make transport: %v", err)
+		return nil, fmt.Errorf("cannot make transport: %v", err)
 	}
 
 	repo, err := client.NewFileCachedRepository(
@@ -36,12 +36,12 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string)
 		trustpinning.TrustPinConfig{},
 	)
 	if err != nil {
-		return fmt.Errorf("cannot create new file cached repository: %v", err)
+		return nil, fmt.Errorf("cannot create new file cached repository: %v", err)
 	}
 
 	err = clearChangeList(repo)
 	if err != nil {
-		return fmt.Errorf("cannot clear change list: %v", err)
+		return nil, fmt.Errorf("cannot clear change list: %v", err)
 	}
 
 	defer clearChangeList(repo)
@@ -51,21 +51,21 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string)
 		case client.ErrRepoNotInitialized, client.ErrRepositoryNotExist:
 			rootKeyIDs, err := importRootKey(rootKey, repo, getPassphraseRetriever())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if err = repo.Initialize(rootKeyIDs); err != nil {
-				return fmt.Errorf("cannot initialize repo: %v", err)
+				return nil, fmt.Errorf("cannot initialize repo: %v", err)
 			}
 
 		default:
-			return fmt.Errorf("cannot list targets: %v", err)
+			return nil, fmt.Errorf("cannot list targets: %v", err)
 		}
 	}
 
 	target, err := client.NewTarget(name, file, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// TODO - Radu M
@@ -73,8 +73,9 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string)
 
 	// If roles is empty, we default to adding to targets
 	if err = repo.AddTarget(target, data.NewRoleList([]string{})...); err != nil {
-		return err
+		return nil, err
 	}
 
-	return repo.Publish()
+	err = repo.Publish()
+	return target, err
 }
