@@ -2,11 +2,12 @@ package trust
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
+
+	"github.com/engineerd/signy/pkg/cnab"
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
@@ -15,12 +16,7 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string)
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
-	parts := strings.Split(ref, ":")
-	gun := parts[0]
-	if len(parts) == 1 {
-		parts = append(parts, "latest")
-	}
-	name := parts[1]
+	gun, name := cnab.SplitTargetRef(ref)
 
 	transport, err := makeTransport(trustServer, gun, tlscacert)
 	if err != nil {

@@ -13,7 +13,6 @@ import (
 
 // Push pushes a bundle to an OCI registry
 func Push(bundleFile, ref string) error {
-
 	buf, err := ioutil.ReadFile(bundleFile)
 	if err != nil {
 		return fmt.Errorf("cannot read bundle file: %v", err)
@@ -42,6 +41,7 @@ func Push(bundleFile, ref string) error {
 	if err != nil {
 		return err
 	}
+
 	fmt.Printf("\nPushed successfully, with digest %q\n", d.Digest)
 	return nil
 }
