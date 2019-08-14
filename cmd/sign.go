@@ -23,7 +23,7 @@ Pushes the metadata of an artifact to a trust collection on a remote server, and
 it pushes the actual artifact to a repository. Currently, the supported artifact types are plaintext and cnab.
 
 On the first push to a repository, it also generates the signing keys.
-To avoid genrating them every time, set the following environment variables with the corresponding passphrases:
+To avoid introducing the passphrases every time, set the following environment variables with the corresponding passphrases:
 
 export SIGNY_ROOT_PASSPHRASE
 export SIGNY_TARGETS_PASSPHRASE
@@ -54,10 +54,10 @@ Pushed trust data for docker.io/<user>/<repo>:tag: cf8916940c7f8b5eb747b9e056c32
 
 Example: computes the SHA256 digest of a canonical CNAB bundle, pushes it to the trust server, then pushes the bundle using CNAB-TO-OCI
 
-$ signy sign --type cnab bundle.json docker.io/radumatei/signed-cnab-bundle:v1
+$ signy sign --type cnab bundle.json docker.io/<user>/<repo>:<tag>
 Root key found, using: d701ba005e6d217c7eb6cb56dbc6cf0bd81f41347927acbca1318131cc693fc9
 
-Pushed trust data for docker.io/radumatei/signed-cnab-bundle:v1: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+Pushed trust data for docker.io/<user>/<repo>:<tag>: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
 Starting to copy image cnab/helloworld:0.1.1...
 Completed image cnab/helloworld:0.1.1 copy
 
