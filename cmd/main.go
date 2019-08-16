@@ -24,7 +24,7 @@ func init() {
 		newListCmd(),
 		newSignCmd(),
 		newVerifyCmd(),
-		newIntotoCmd(),
+		newIntotoSignCmd(),
 		newIntotoVerifyCmd(),
 	)
 

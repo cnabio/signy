@@ -40,7 +40,7 @@ func Verify(layout, linkDir string, layoutKeyPaths ...string) error {
 		return fmt.Errorf("failed verification: %v", err)
 	}
 
-	fmt.Printf("Verification succeeded.\n")
+	fmt.Printf("Verification succeeded for layout %v.\n", layout)
 	return nil
 }
 

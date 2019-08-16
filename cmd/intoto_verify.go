@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -42,6 +43,7 @@ func (i *intotoVerifyCmd) run() error {
 		return err
 	}
 
+	fmt.Printf("\nWriting In-Toto metadata files into %v", i.verificationDir)
 	err = intoto.WriteMetadataFiles(m, i.verificationDir)
 	if err != nil {
 		return err

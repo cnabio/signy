@@ -11,7 +11,7 @@ import (
 	"github.com/engineerd/signy/pkg/trust"
 )
 
-type intotoCmd struct {
+type intotoSignCmd struct {
 	layout    string
 	layoutKey string
 	linkDir   string
@@ -20,8 +20,8 @@ type intotoCmd struct {
 	file string
 }
 
-func newIntotoCmd() *cobra.Command {
-	i := intotoCmd{}
+func newIntotoSignCmd() *cobra.Command {
+	i := intotoSignCmd{}
 	cmd := &cobra.Command{
 		Use:   "intoto-sign",
 		Short: "execute the in-toto verification",
@@ -38,7 +38,7 @@ func newIntotoCmd() *cobra.Command {
 	return cmd
 }
 
-func (i *intotoCmd) run() error {
+func (i *intotoSignCmd) run() error {
 	err := intoto.Verify(i.layout, i.linkDir, i.layoutKey)
 	if err != nil {
 		return fmt.Errorf("validation for in-toto metadata failed: %v", err)
@@ -47,6 +47,8 @@ func (i *intotoCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("cannot get metadata message: %v", err)
 	}
+
+	fmt.Printf("\nAdding In-Toto layout and links metadata to TUF")
 
 	target, err := trust.SignAndPublish(trustDir, trustServer, i.ref, i.file, tlscacert, "", &r)
 	if err != nil {
