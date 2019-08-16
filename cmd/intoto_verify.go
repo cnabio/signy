@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"path/filepath"
 
+	"github.com/spf13/cobra"
+
 	"github.com/engineerd/signy/pkg/intoto"
 	"github.com/engineerd/signy/pkg/trust"
-	"github.com/spf13/cobra"
 )
 
 type intotoVerifyCmd struct {

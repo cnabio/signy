@@ -4,10 +4,11 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/engineerd/signy/pkg/cnab"
 	"github.com/engineerd/signy/pkg/intoto"
 	"github.com/engineerd/signy/pkg/trust"
-	"github.com/spf13/cobra"
 )
 
 type intotoCmd struct {

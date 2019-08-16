@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/engineerd/signy/pkg/trust"
-
 	"github.com/spf13/cobra"
+
+	"github.com/engineerd/signy/pkg/trust"
 )
 
 type listCmd struct {
