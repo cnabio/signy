@@ -229,14 +229,6 @@
   version = "v0.4.0"
 
 [[projects]]
-  digest = "1:1a1cd156853f8aaa41233a94e08609eb5982f2abf7b0213bc799c1abf87392cd"
-  name = "github.com/engineerd/cnab-go"
-  packages = ["bundle"]
-  pruneopts = "UT"
-  revision = "63abcd2f312747df714357dfab48fda5d6d1f903"
-  version = "v0.2.1-beta1"
-
-[[projects]]
   digest = "1:48092bf6632f55839850666c33469f546f6d45fdbd59a66759ec12e84d853dc2"
   name = "github.com/gogo/protobuf"
   packages = ["proto"]
@@ -265,6 +257,15 @@
   pruneopts = "UT"
   revision = "ed099d42384823742bba0bf9a72b53b55c9e2e38"
   version = "v1.7.2"
+
+[[projects]]
+  branch = "inspections-dir"
+  digest = "1:73757c0a4acc4dd2e9b6d66831326c5d8c8ebc307abe010992110d423f8190a0"
+  name = "github.com/in-toto/in-toto-golang"
+  packages = ["in_toto"]
+  pruneopts = "UT"
+  revision = "ced95e46b9740138504f0664e73915e67ee81435"
+  source = "github.com/radu-matei/in-toto-golang"
 
 [[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
@@ -527,7 +528,8 @@
     "github.com/docker/distribution/registry/client/auth",
     "github.com/docker/distribution/registry/client/auth/challenge",
     "github.com/docker/distribution/registry/client/transport",
-    "github.com/engineerd/cnab-go/bundle",
+    "github.com/docker/go/canonical/json",
+    "github.com/in-toto/in-toto-golang/in_toto",
     "github.com/spf13/cobra",
     "github.com/theupdateframework/notary",
     "github.com/theupdateframework/notary/client",
