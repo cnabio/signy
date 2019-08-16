@@ -13,11 +13,11 @@ import (
 )
 
 // VerifyCNABTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle
-func VerifyCNABTrust(ref, localFile, trustServer, tlscacert, trustDir string) error {
+func VerifyCNABTrust(ref, localFile, trustServer, tlscacert, trustDir string) (*client.TargetWithRole, error) {
 	gun, name := cnab.SplitTargetRef(ref)
 	target, err := GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
@@ -26,29 +26,31 @@ func VerifyCNABTrust(ref, localFile, trustServer, tlscacert, trustDir string) er
 	fmt.Printf("\nPulling bundle from registry: %v", ref)
 	bun, err := cnab.Pull(ref)
 	if err != nil {
-		return fmt.Errorf("cannot pull bundle: %v", err)
+		return nil, fmt.Errorf("cannot pull bundle: %v", err)
 	}
 	buf, err := json.MarshalCanonical(bun)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	remotesErr := verifyTargetSHAFromBytes(target, buf)
 	if localFile == "" {
-		fmt.Printf("\nThe SHA sums are equal: %v\n", trustedSHA)
-		return remotesErr
+		if remotesErr == nil {
+			fmt.Printf("\nThe SHA sums are equal: %v\n", trustedSHA)
+		}
+		return target, remotesErr
 	}
 
 	lb, err := ioutil.ReadFile(localFile)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := verifyTargetSHAFromBytes(target, lb); err == nil && remotesErr == nil {
 		fmt.Printf("\nThe SHA sums are equal: %v\n", trustedSHA)
-		return nil
+		return target, nil
 	}
-	return err
+	return target, err
 }
 
 // VerifyPlainTextTrust ensures the trust metadata for a given GUN matches the computed metadata of the local file

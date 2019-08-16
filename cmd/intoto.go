@@ -1,7 +1,12 @@
 package main
 
 import (
+	"encoding/hex"
+	"fmt"
+
+	"github.com/engineerd/signy/pkg/cnab"
 	"github.com/engineerd/signy/pkg/intoto"
+	"github.com/engineerd/signy/pkg/trust"
 	"github.com/spf13/cobra"
 )
 
@@ -9,14 +14,19 @@ type intotoCmd struct {
 	layout    string
 	layoutKey string
 	linkDir   string
+
+	ref  string
+	file string
 }
 
 func newIntotoCmd() *cobra.Command {
 	i := intotoCmd{}
 	cmd := &cobra.Command{
-		Use:   "intoto",
+		Use:   "intoto-sign",
 		Short: "execute the in-toto verification",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			i.file = args[0]
+			i.ref = args[1]
 			return i.run()
 		},
 	}
@@ -28,5 +38,19 @@ func newIntotoCmd() *cobra.Command {
 }
 
 func (i *intotoCmd) run() error {
-	return intoto.Verify(i.layout, i.linkDir, i.layoutKey)
+	err := intoto.Verify(i.layout, i.linkDir, i.layoutKey)
+	if err != nil {
+		return fmt.Errorf("validation for in-toto metadata failed: %v", err)
+	}
+	r, err := intoto.GetMetadataRawMessage(i.layout, i.linkDir, i.layoutKey)
+	if err != nil {
+		return fmt.Errorf("cannot get metadata message: %v", err)
+	}
+
+	target, err := trust.SignAndPublish(trustDir, trustServer, i.ref, i.file, tlscacert, "", &r)
+	if err != nil {
+		return fmt.Errorf("cannot sign and publish trust data: %v", err)
+	}
+	fmt.Printf("\nPushed trust data for %v: %v\n", i.ref, hex.EncodeToString(target.Hashes["sha256"]))
+	return cnab.Push(i.file, i.ref)
 }

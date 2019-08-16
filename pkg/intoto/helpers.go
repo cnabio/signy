@@ -3,57 +3,11 @@ package intoto
 import (
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/in-toto/in-toto-golang/in_toto"
 )
 
-/*
-ValidateLayout is a function used to ensure that a passed item of type Layout
-matches the necessary format.
-*/
-func ValidateLayout(layout in_toto.Layout) error {
-	if layout.Type != "layout" {
-		return fmt.Errorf("invalid Type value for layout: should be 'layout'")
-	}
-
-	if _, err := time.Parse(in_toto.ISO8601DateSchema, layout.Expires); err != nil {
-		return fmt.Errorf("expiry time parsed incorrectly - date either" +
-			" invalid or of incorrect format")
-	}
-
-	for keyID, key := range layout.Keys {
-		if key.KeyId != keyID {
-			return fmt.Errorf("invalid key found")
-		}
-		if err := validateRSAPubKey(key); err != nil {
-			return err
-		}
-	}
-
-	var namesSeen = make(map[string]bool)
-	for _, step := range layout.Steps {
-		if namesSeen[step.Name] {
-			return fmt.Errorf("non unique step or inspection name found")
-		}
-		namesSeen[step.Name] = true
-		if err := validateStep(step); err != nil {
-			return err
-		}
-	}
-
-	for _, inspection := range layout.Inspect {
-		if namesSeen[inspection.Name] {
-			return fmt.Errorf("non unique step or inspection name found")
-		}
-		namesSeen[inspection.Name] = true
-	}
-	return nil
-}
-
-/*
-validateRSAPubKey checks if a passed key is a valid RSA public key.
-*/
+// validateRSAPubKey checks if a passed key is a valid RSA public key.
 func validateRSAPubKey(key in_toto.Key) error {
 	if key.KeyType != "rsa" {
 		return fmt.Errorf("invalid KeyType for key '%s': should be 'rsa', got"+
@@ -69,9 +23,7 @@ func validateRSAPubKey(key in_toto.Key) error {
 	return nil
 }
 
-/*
-validatePubKey is a general function to validate if a key is a valid public key.
-*/
+// validatePubKey is a general function to validate if a key is a valid public key.
 func validatePubKey(key in_toto.Key) error {
 	if err := validateHexString(key.KeyId); err != nil {
 		return fmt.Errorf("keyid: %s", err.Error())
@@ -85,10 +37,8 @@ func validatePubKey(key in_toto.Key) error {
 	return nil
 }
 
-/*
-validateHexString is used to validate that a string passed to it contains
-only valid hexadecimal characters.
-*/
+// validateHexString is used to validate that a string passed to it contains
+// only valid hexadecimal characters.
 func validateHexString(str string) error {
 	formatCheck, _ := regexp.MatchString("^[a-fA-F0-9]+$", str)
 	if !formatCheck {
@@ -97,10 +47,8 @@ func validateHexString(str string) error {
 	return nil
 }
 
-/*
-validateStep ensures that a passed step is valid and matches the
-necessary format of an step.
-*/
+// validateStep ensures that a passed step is valid and matches the
+// necessary format of an step.
 func validateStep(step in_toto.Step) error {
 	if err := validateSupplyChainItem(step.SupplyChainItem); err != nil {
 		return fmt.Errorf("step %s", err.Error())
@@ -118,11 +66,9 @@ func validateStep(step in_toto.Step) error {
 	return nil
 }
 
-/*
-validateSupplyChainItem is used to validate the common elements found in both
-steps and inspections. Here, the function primarily ensures that the name of
-a supply chain item isn't empty.
-*/
+// validateSupplyChainItem is used to validate the common elements found in both
+// steps and inspections. Here, the function primarily ensures that the name of
+// a supply chain item isn't empty.
 func validateSupplyChainItem(item in_toto.SupplyChainItem) error {
 	if item.Name == "" {
 		return fmt.Errorf("name cannot be empty")
@@ -137,10 +83,8 @@ func validateSupplyChainItem(item in_toto.SupplyChainItem) error {
 	return nil
 }
 
-/*
-validateArtifactRule calls UnpackRule to validate that the passed rule conforms
-with any of the available rule formats.
-*/
+// validateArtifactRule calls UnpackRule to validate that the passed rule conforms
+// with any of the available rule formats.
 func validateArtifactRule(rule []string) error {
 	if _, err := in_toto.UnpackRule(rule); err != nil {
 		return err
@@ -148,9 +92,7 @@ func validateArtifactRule(rule []string) error {
 	return nil
 }
 
-/*
-validateSliceOfArtifactRules iterates over passed rules to validate them.
-*/
+// validateSliceOfArtifactRules iterates over passed rules to validate them.
 func validateSliceOfArtifactRules(rules [][]string) error {
 	for _, rule := range rules {
 		if err := validateArtifactRule(rule); err != nil {
@@ -158,4 +100,14 @@ func validateSliceOfArtifactRules(rules [][]string) error {
 		}
 	}
 	return nil
+}
+
+// GetLayout returns an In-Toto layout given a file path
+func GetLayout(layout string) (*in_toto.Layout, error) {
+	var mb in_toto.Metablock
+	if err := mb.Load(layout); err != nil {
+		return nil, fmt.Errorf("cannot load layout from file file %v: %v", layout, err)
+	}
+	l := mb.Signed.(in_toto.Layout)
+	return &l, nil
 }

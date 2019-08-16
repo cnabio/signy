@@ -78,7 +78,8 @@ func (v *verifyCmd) run() error {
 		}
 		return trust.VerifyPlainTextTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
 	case "cnab":
-		return trust.VerifyCNABTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
+		_, err := trust.VerifyCNABTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
+		return err
 	default:
 		return fmt.Errorf("unknown type")
 	}

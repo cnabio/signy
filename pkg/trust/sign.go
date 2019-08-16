@@ -3,6 +3,7 @@ package trust
 import (
 	"fmt"
 
+	canonicaljson "github.com/docker/go/canonical/json"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
@@ -11,7 +12,7 @@ import (
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string) (*client.Target, error) {
+func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string, custom *canonicaljson.RawMessage) (*client.Target, error) {
 	if err := ensureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
@@ -59,7 +60,7 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string)
 		}
 	}
 
-	target, err := client.NewTarget(name, file, nil)
+	target, err := client.NewTarget(name, file, custom)
 	if err != nil {
 		return nil, err
 	}
