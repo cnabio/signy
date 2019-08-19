@@ -1,1 +1,5 @@
 bin/
+
+# resulting materials from running in-toto
+foo.py
+untar.link

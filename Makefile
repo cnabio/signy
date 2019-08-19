@@ -43,7 +43,7 @@ endif
 ifndef HAS_GOIMPORTS
 	go get -u golang.org/x/tools/cmd/goimports
 endif
-	dep ensure -vendor-only -v
+	dep check
 
 .PHONY: e2e
 e2e:

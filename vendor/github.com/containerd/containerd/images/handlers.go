@@ -117,7 +117,7 @@ func Walk(ctx context.Context, handler Handler, descs ...ocispec.Descriptor) err
 //
 // If any handler returns an error, the dispatch session will be canceled.
 func Dispatch(ctx context.Context, handler Handler, limiter *semaphore.Weighted, descs ...ocispec.Descriptor) error {
-	eg, ctx2 := errgroup.WithContext(ctx)
+	eg, ctx := errgroup.WithContext(ctx)
 	for _, desc := range descs {
 		desc := desc
 
@@ -126,11 +126,10 @@ func Dispatch(ctx context.Context, handler Handler, limiter *semaphore.Weighted,
 				return err
 			}
 		}
-
 		eg.Go(func() error {
 			desc := desc
 
-			children, err := handler.Handle(ctx2, desc)
+			children, err := handler.Handle(ctx, desc)
 			if limiter != nil {
 				limiter.Release(1)
 			}
@@ -142,7 +141,7 @@ func Dispatch(ctx context.Context, handler Handler, limiter *semaphore.Weighted,
 			}
 
 			if len(children) > 0 {
-				return Dispatch(ctx2, handler, limiter, children...)
+				return Dispatch(ctx, handler, limiter, children...)
 			}
 
 			return nil

@@ -1,77 +1,31 @@
 package trust
 
 import (
+	"encoding/hex"
 	"fmt"
 
-	"github.com/theupdateframework/notary/client"
-	"github.com/theupdateframework/notary/trustpinning"
-	"github.com/theupdateframework/notary/tuf/data"
-
 	"github.com/engineerd/signy/pkg/cnab"
+	"github.com/engineerd/signy/pkg/intoto"
+	"github.com/engineerd/signy/pkg/tuf"
 )
 
-// SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string) (*client.Target, error) {
-	if err := ensureTrustDir(trustDir); err != nil {
-		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
-	}
-
-	gun, name := cnab.SplitTargetRef(ref)
-
-	transport, err := makeTransport(trustServer, gun, tlscacert)
+// SignAndPublish takes a CNAB bundle, pushes the signature and metadata to a trust server, then pushes the bundle
+func SignAndPublish(ref, layout, linkDir, layoutKey, trustDir, trustServer, file, tlscacert string) error {
+	err := intoto.ValidateFromPath(layout)
 	if err != nil {
-		return nil, fmt.Errorf("cannot make transport: %v", err)
+		return fmt.Errorf("validation for in-toto metadata failed: %v", err)
 	}
-
-	repo, err := client.NewFileCachedRepository(
-		trustDir,
-		data.GUN(gun),
-		trustServer,
-		transport,
-		getPassphraseRetriever(),
-		trustpinning.TrustPinConfig{},
-	)
+	r, err := intoto.GetMetadataRawMessage(layout, linkDir, layoutKey)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create new file cached repository: %v", err)
+		return fmt.Errorf("cannot get metadata message: %v", err)
 	}
 
-	err = clearChangeList(repo)
+	fmt.Printf("\nAdding In-Toto layout and links metadata to TUF")
+
+	target, err := tuf.SignAndPublish(trustDir, trustServer, ref, file, tlscacert, "", &r)
 	if err != nil {
-		return nil, fmt.Errorf("cannot clear change list: %v", err)
+		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
-
-	defer clearChangeList(repo)
-
-	if _, err = repo.ListTargets(); err != nil {
-		switch err.(type) {
-		case client.ErrRepoNotInitialized, client.ErrRepositoryNotExist:
-			rootKeyIDs, err := importRootKey(rootKey, repo, getPassphraseRetriever())
-			if err != nil {
-				return nil, err
-			}
-
-			if err = repo.Initialize(rootKeyIDs); err != nil {
-				return nil, fmt.Errorf("cannot initialize repo: %v", err)
-			}
-
-		default:
-			return nil, fmt.Errorf("cannot list targets: %v", err)
-		}
-	}
-
-	target, err := client.NewTarget(name, file, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO - Radu M
-	// decide whether to allow actually passing roles as flags
-
-	// If roles is empty, we default to adding to targets
-	if err = repo.AddTarget(target, data.NewRoleList([]string{})...); err != nil {
-		return nil, err
-	}
-
-	err = repo.Publish()
-	return target, err
+	fmt.Printf("\nPushed trust data for %v: %v to server %v\n", ref, hex.EncodeToString(target.Hashes["sha256"]), trustServer)
+	return cnab.Push(file, ref)
 }

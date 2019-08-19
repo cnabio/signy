@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/engineerd/signy/pkg/cnab"
-	"github.com/engineerd/signy/pkg/trust"
+	"github.com/engineerd/signy/pkg/tuf"
 )
 
 type signCmd struct {
@@ -85,11 +85,11 @@ Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71
 func (s *signCmd) run() error {
 	switch s.artifactType {
 	case "plaintext":
-		target, err := trust.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey)
+		target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
 		fmt.Printf("\nPushed trust data for %v: %v \n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
 		return err
 	case "cnab":
-		target, err := trust.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey)
+		target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
 		if err != nil {
 			return fmt.Errorf("cannot sign and publish trust data: %v", err)
 		}

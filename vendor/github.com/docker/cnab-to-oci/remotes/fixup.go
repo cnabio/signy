@@ -78,6 +78,7 @@ func fixupImage(ctx context.Context, baseImage bundle.BaseImage, relocationMap b
 		return err
 	}
 	relocationMap[baseImage.Image] = newRef.String()
+	fmt.Printf("adding entry in relocation map: %v: %v", baseImage.Image, newRef.String())
 
 	// TODO: check if the relocation map should be updated here as well
 	if fixupInfo.sourceRef.Name() == fixupInfo.targetRepo.Name() {
