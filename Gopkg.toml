@@ -12,9 +12,17 @@
    source = "github.com/radu-matei/in-toto-golang"
    branch = "inspections-dir"
 
-[[constraint]]
+[[override]]
+  name = "github.com/containerd/containerd"
+  revision = "7c1e88399ec0b0b077121d9d5ad97e647b11c870"
+
+[[override]]
+  name = "github.com/containerd/cgroups"
+  revision = "4994991857f9b0ae8dc439551e8bebdbb4bf66c1"
+
+[[override]]
   name = "github.com/docker/distribution"
-  revision = "83389a148052d74ac602f5f1d62f86ff2f3c4aa5"
+  revision = "0d3efadf0154c2b8a4e7b6621fff9809655cc580"
 
 [prune]
   go-tests = true

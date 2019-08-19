@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/engineerd/signy/pkg/trust"
+	"github.com/engineerd/signy/pkg/tuf"
 )
 
 type listCmd struct {
@@ -40,5 +40,5 @@ $ signy list docker.io/library/alpine
 }
 
 func (l *listCmd) run() error {
-	return trust.PrintTargets(l.gun, trustServer, tlscacert, trustDir)
+	return tuf.PrintTargets(l.gun, trustServer, tlscacert, trustDir)
 }

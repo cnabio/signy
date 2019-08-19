@@ -1,19 +1,17 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"path/filepath"
-
 	"github.com/spf13/cobra"
 
-	"github.com/engineerd/signy/pkg/intoto"
 	"github.com/engineerd/signy/pkg/trust"
 )
 
 type intotoVerifyCmd struct {
-	verificationDir string
-	ref             string
+	verificationDir   string
+	ref               string
+	verificationImage string
+	targetFiles       []string
+	keepTempDir       bool
 }
 
 func newIntotoVerifyCmd() *cobra.Command {
@@ -27,27 +25,13 @@ func newIntotoVerifyCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&i.verificationDir, "verifications", "", "", "directory to run verifications")
+	cmd.Flags().StringArrayVarP(&i.targetFiles, "target", "", nil, "target files to copy in container")
+	cmd.Flags().StringVarP(&i.verificationImage, "image", "", "", "container image to run the verification")
+	cmd.Flags().BoolVarP(&i.keepTempDir, "keep", "", false, "if passed, the temporary directory where the metadata is pulled is not deleted")
 
 	return cmd
 }
 
 func (i *intotoVerifyCmd) run() error {
-	target, err := trust.VerifyCNABTrust(i.ref, "", trustServer, tlscacert, trustDir)
-	if err != nil {
-		return err
-	}
-
-	m := &intoto.Metadata{}
-	err = json.Unmarshal(*target.Custom, m)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("\nWriting In-Toto metadata files into %v", i.verificationDir)
-	err = intoto.WriteMetadataFiles(m, i.verificationDir)
-	if err != nil {
-		return err
-	}
-
-	return intoto.Verify(filepath.Join(i.verificationDir, intoto.LayoutDefaultName), i.verificationDir, filepath.Join(i.verificationDir, intoto.KeyDefaultName))
+	return trust.Validate(i.ref, "", trustServer, tlscacert, trustDir, i.verificationImage, i.targetFiles, i.keepTempDir)
 }
