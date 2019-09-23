@@ -102,7 +102,7 @@ func notifyError(notifyEvent eventNotifier, err error) error {
 	return err
 }
 
-func checkBaseImage(baseImage bundle.BaseImage) error {
+func checkBaseImage(baseImage *bundle.BaseImage) error {
 	switch baseImage.ImageType {
 	case "docker":
 	case "oci":
@@ -119,7 +119,7 @@ func checkBaseImage(baseImage bundle.BaseImage) error {
 	case images.MediaTypeDockerSchema2ManifestList:
 	case "":
 	default:
-		return fmt.Errorf("image media type %q is not supported", baseImage.ImageType)
+		return fmt.Errorf("image media type %q is not supported", baseImage.MediaType)
 	}
 
 	return nil

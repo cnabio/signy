@@ -9,6 +9,7 @@ import (
 
 	"github.com/containerd/containerd/images"
 	"github.com/deislabs/cnab-go/bundle"
+	"github.com/docker/cnab-to-oci/relocation"
 	"github.com/docker/distribution/reference"
 	ocischema "github.com/opencontainers/image-spec/specs-go"
 	ocischemav1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -61,7 +62,7 @@ func GetBundleConfigManifestDescriptor(ix *ocischemav1.Index) (ocischemav1.Descr
 
 // ConvertBundleToOCIIndex converts a CNAB bundle into an OCI Index representation
 func ConvertBundleToOCIIndex(b *bundle.Bundle, targetRef reference.Named,
-	bundleConfigManifestRef ocischemav1.Descriptor, relocationMap bundle.ImageRelocationMap) (*ocischemav1.Index, error) {
+	bundleConfigManifestRef ocischemav1.Descriptor, relocationMap relocation.ImageRelocationMap) (*ocischemav1.Index, error) {
 	annotations, err := makeAnnotations(b)
 	if err != nil {
 		return nil, err
@@ -80,9 +81,9 @@ func ConvertBundleToOCIIndex(b *bundle.Bundle, targetRef reference.Named,
 	return &result, nil
 }
 
-// GenerateRelocationMap TODO
-func GenerateRelocationMap(ix *ocischemav1.Index, b *bundle.Bundle, originRepo reference.Named) (bundle.ImageRelocationMap, error) {
-	relocationMap := bundle.ImageRelocationMap{}
+// GenerateRelocationMap generates the bundle relocation map
+func GenerateRelocationMap(ix *ocischemav1.Index, b *bundle.Bundle, originRepo reference.Named) (relocation.ImageRelocationMap, error) {
+	relocationMap := relocation.ImageRelocationMap{}
 
 	for _, d := range ix.Manifests {
 		switch d.MediaType {
@@ -135,11 +136,6 @@ func GenerateRelocationMap(ix *ocischemav1.Index, b *bundle.Bundle, originRepo r
 	return relocationMap, nil
 }
 
-func CheckAnnotations(ix *ocischemav1.Index, b *bundle.Bundle) bool {
-	// TODO
-	return true
-}
-
 func makeAnnotations(b *bundle.Bundle) (map[string]string, error) {
 	result := map[string]string{
 		CNABRuntimeVersionAnnotation:      b.SchemaVersion,
@@ -165,30 +161,8 @@ func makeAnnotations(b *bundle.Bundle) (map[string]string, error) {
 	return result, nil
 }
 
-func parseTopLevelAnnotations(annotations map[string]string, into *bundle.Bundle) error {
-	var ok bool
-	if into.Name, ok = annotations[ocischemav1.AnnotationTitle]; !ok {
-		return errors.New("manifest is missing title annotation " + ocischemav1.AnnotationTitle)
-	}
-	if into.Version, ok = annotations[ocischemav1.AnnotationVersion]; !ok {
-		return errors.New("manifest is missing version annotation " + ocischemav1.AnnotationVersion)
-	}
-	into.Description = annotations[ocischemav1.AnnotationDescription]
-	if maintainersJSON, ok := annotations[ocischemav1.AnnotationAuthors]; ok {
-		if err := json.Unmarshal([]byte(maintainersJSON), &into.Maintainers); err != nil {
-			return fmt.Errorf("unable to parse maintainers: %s", err)
-		}
-	}
-	if keywordsJSON, ok := annotations[CNABKeywordsAnnotation]; ok {
-		if err := json.Unmarshal([]byte(keywordsJSON), &into.Keywords); err != nil {
-			return fmt.Errorf("unable to parse keywords: %s", err)
-		}
-	}
-	return nil
-}
-
 func makeManifests(b *bundle.Bundle, targetReference reference.Named,
-	bundleConfigManifestReference ocischemav1.Descriptor, relocationMap bundle.ImageRelocationMap) ([]ocischemav1.Descriptor, error) {
+	bundleConfigManifestReference ocischemav1.Descriptor, relocationMap relocation.ImageRelocationMap) ([]ocischemav1.Descriptor, error) {
 	if len(b.InvocationImages) != 1 {
 		return nil, errors.New("only one invocation image supported")
 	}
@@ -230,10 +204,10 @@ func makeSortedImages(images map[string]bundle.Image) []string {
 	return result
 }
 
-func makeDescriptor(baseImage bundle.BaseImage, targetReference reference.Named, relocationMap bundle.ImageRelocationMap) (ocischemav1.Descriptor, error) {
+func makeDescriptor(baseImage bundle.BaseImage, targetReference reference.Named, relocationMap relocation.ImageRelocationMap) (ocischemav1.Descriptor, error) {
 	relocatedImage, ok := relocationMap[baseImage.Image]
 	if !ok {
-		return ocischemav1.Descriptor{}, fmt.Errorf("unknown invocation image %q in the relocation map", baseImage.Image)
+		return ocischemav1.Descriptor{}, fmt.Errorf("image %q not present in the relocation map", baseImage.Image)
 	}
 
 	named, err := reference.ParseNormalizedNamed(relocatedImage)
@@ -251,11 +225,14 @@ func makeDescriptor(baseImage bundle.BaseImage, targetReference reference.Named,
 	if err != nil {
 		return ocischemav1.Descriptor{}, err
 	}
+	if baseImage.Size == 0 {
+		return ocischemav1.Descriptor{}, fmt.Errorf("image %q size is not set", relocatedImage)
+	}
 
 	return ocischemav1.Descriptor{
 		Digest:    digested.Digest(),
 		MediaType: mediaType,
-		Size:      int64(baseImage.Size), // TODO: mutate the bundle if the size is not set
+		Size:      int64(baseImage.Size),
 	}, nil
 }
 

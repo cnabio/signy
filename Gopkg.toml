@@ -4,8 +4,7 @@
 
 [[constraint]]
   name = "github.com/docker/cnab-to-oci"
-  source = "github.com/radu-matei/cnab-to-oci"
-  branch = "canonical"
+  version = "v0.2.0-beta1"
 
 [[constraint]]
   name = "github.com/in-toto/in-toto-golang"

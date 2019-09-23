@@ -12,13 +12,14 @@ import (
 	"github.com/deislabs/cnab-go/bundle"
 	"github.com/docker/cli/opts"
 	"github.com/docker/cnab-to-oci/converter"
+	"github.com/docker/cnab-to-oci/relocation"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/client/auth"
 	ocischemav1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // Pull pulls a bundle from an OCI Image Index manifest
-func Pull(ctx context.Context, ref reference.Named, resolver remotes.Resolver) (*bundle.Bundle, bundle.ImageRelocationMap, error) {
+func Pull(ctx context.Context, ref reference.Named, resolver remotes.Resolver) (*bundle.Bundle, relocation.ImageRelocationMap, error) {
 	log.G(ctx).Debugf("Pulling CNAB Bundle %s", ref)
 	index, err := getIndex(ctx, ref, resolver)
 	if err != nil {
