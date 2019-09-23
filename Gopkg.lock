@@ -180,15 +180,14 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:9840201525a2e1ada0caf4089928e9d749cf8ec88bdb4ed8525211149610cc05"
+  digest = "1:534ad88d138058854fb0029442cb101231fca8f3a368db486f9d76fecd970456"
   name = "github.com/deislabs/cnab-go"
   packages = [
     "bundle",
     "bundle/definition",
   ]
   pruneopts = "UT"
-  revision = "d0e47f49ea9a4ef8aedf1043b11ffa7506fc10d7"
-  version = "v0.2.0-beta1"
+  revision = "v0.4.0-beta1"
 
 [[projects]]
   digest = "1:44885d3782f36ff3010fb2ae55d72276b0717700d3b95e2ae22a08ce25bf60ae"
@@ -223,16 +222,16 @@
   version = "v19.03.1"
 
 [[projects]]
-  branch = "canonical"
-  digest = "1:526f7377ece51c6ce27239ddf9e2c0860ccfd2584643bdf3853145b196019a30"
+  digest = "1:51fef110ff737b08bebfa091471714db028ebcbeda6a3cad8ca4512b39b34581"
   name = "github.com/docker/cnab-to-oci"
   packages = [
     "converter",
+    "relocation",
     "remotes",
   ]
   pruneopts = "UT"
-  revision = "b55c93a7d0efd6067861d6221c470a5af201bcac"
-  source = "github.com/radu-matei/cnab-to-oci"
+  revision = "c33e316902ce0e44adc6e14731c7241286d17d8e"
+  version = "v0.2.0-beta1"
 
 [[projects]]
   digest = "1:b375e031f9124a02189d37d1b0d63bb3d9ec241c6ae1ae5c6e25c74d166c3e4f"
