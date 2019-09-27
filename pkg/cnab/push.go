@@ -31,6 +31,7 @@ func Push(bundleFile, ref string) error {
 
 	relocationMap, err := remotes.FixupBundle(context.Background(), &b, n, resolver, remotes.WithEventCallback(displayEvent),
 		remotes.WithInvocationImagePlatforms(nil),
+		remotes.WithAutoBundleUpdate(),
 		remotes.WithComponentImagePlatforms(nil))
 	if err != nil {
 		return err
