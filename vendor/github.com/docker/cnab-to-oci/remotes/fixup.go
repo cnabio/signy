@@ -13,6 +13,7 @@ import (
 	"github.com/deislabs/cnab-go/bundle"
 	"github.com/docker/cnab-to-oci/relocation"
 	"github.com/docker/distribution/reference"
+	"github.com/docker/docker/client"
 	ocischemav1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -70,7 +71,7 @@ func fixupImage(ctx context.Context, baseImage *bundle.BaseImage, relocationMap 
 
 	notifyEvent(FixupEventTypeCopyImageStart, "", nil)
 	// Fixup Base image
-	fixupInfo, err := fixupBaseImage(ctx, baseImage, cfg.targetRef, cfg.resolver)
+	fixupInfo, err := fixupBaseImage(ctx, baseImage, cfg.targetRef, cfg.resolver, cfg.pushImages, cfg.imageClient)
 	if err != nil {
 		return notifyError(notifyEvent, err)
 	}
@@ -184,7 +185,9 @@ func fixupPlatforms(ctx context.Context,
 func fixupBaseImage(ctx context.Context,
 	baseImage *bundle.BaseImage,
 	targetRef reference.Named, //nolint: interfacer
-	resolver remotes.Resolver) (imageFixupInfo, error) {
+	resolver remotes.Resolver,
+	pushImages bool,
+	imageClient client.ImageAPIClient) (imageFixupInfo, error) {
 
 	// Check image references
 	if err := checkBaseImage(baseImage); err != nil {
@@ -203,7 +206,18 @@ func fixupBaseImage(ctx context.Context,
 	// Try to fetch the image descriptor
 	_, descriptor, err := resolver.Resolve(ctx, sourceImageRef.String())
 	if err != nil {
-		return imageFixupInfo{}, fmt.Errorf("failed to resolve %q, push the image to the registry before pushing the bundle: %s", sourceImageRef, err)
+		if pushImages && imageClient != nil {
+			targetImageRef := reference.TagNameOnly(targetRef)
+			if err := pushUnderTag(ctx, imageClient, baseImage, targetImageRef); err != nil {
+				return imageFixupInfo{}, err
+			}
+			_, descriptor, err = resolver.Resolve(ctx, targetImageRef.String())
+			if err != nil {
+				return imageFixupInfo{}, fmt.Errorf("failed to resolve %q after pushing it: %s", targetRef, err)
+			}
+		} else {
+			return imageFixupInfo{}, fmt.Errorf("failed to resolve %q, push the image to the registry before pushing the bundle: %s", sourceImageRef, err)
+		}
 	}
 	return imageFixupInfo{
 		resolvedDescriptor: descriptor,
