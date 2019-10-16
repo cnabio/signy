@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/engineerd/signy/pkg/trust"
+
 	"github.com/spf13/cobra"
 
 	"github.com/engineerd/signy/pkg/tuf"
@@ -12,6 +14,12 @@ type verifyCmd struct {
 	ref       string
 	thick     bool
 	localFile string
+
+	intoto            bool
+	keepTempDir       bool
+	verificationImage string
+	// TODO: remove this
+	targetFiles []string
 }
 
 func newVerifyCmd() *cobra.Command {
@@ -51,8 +59,13 @@ The SHA sums are equal: cd205919129bff138a3402b4de5abbbc1d310ec982e83a780ffee187
 			return verify.run()
 		},
 	}
-	cmd.Flags().BoolVarP(&verify.thick, "thick", "", false, "Verifies a thick bundle. If passed, only the signature is pulled from the trust server, and is verified against a local thick bundle.")
-	cmd.Flags().StringVarP(&verify.localFile, "local", "", "", "Local file to validate the SHA256 against (mandatory for thick bundles).")
+	cmd.Flags().BoolVarP(&verify.thick, "thick", "", false, "Verifies a thick bundle. If passed, only the signature is pulled from the trust server, and is verified against a local thick bundle")
+	cmd.Flags().StringVarP(&verify.localFile, "local", "", "", "Local file to validate the SHA256 against (mandatory for thick bundles)")
+
+	cmd.Flags().BoolVarP(&verify.intoto, "in-toto", "", false, "If passed, will try to fetch in-toto metadata from TUF and perform the verification")
+	cmd.Flags().StringVarP(&verify.verificationImage, "image", "", "docker.pkg.github.com/engineerd/in-toto-container/verification:v1", "container image to run the in-toto verification")
+	cmd.Flags().BoolVarP(&verify.keepTempDir, "keep", "", false, "if passed, the temporary directory where the in-toto metadata is pulled is not deleted")
+	cmd.Flags().StringArrayVarP(&verify.targetFiles, "target", "", nil, "target files to copy in container for in-toto verifications")
 
 	return cmd
 }
@@ -62,7 +75,15 @@ func (v *verifyCmd) run() error {
 		if v.localFile == "" {
 			return fmt.Errorf("no local file provided for thick bundle verification")
 		}
+		if v.intoto {
+			return trust.ValidateThickBundle(v.ref, v.localFile, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, v.targetFiles, v.keepTempDir)
+		}
+
 		return tuf.VerifyFileTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
+	}
+
+	if v.intoto {
+		return trust.ValidateThinBundle(v.ref, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, v.targetFiles, v.keepTempDir)
 	}
 
 	return tuf.VerifyCNABTrust(v.ref, trustServer, tlscacert, trustDir)

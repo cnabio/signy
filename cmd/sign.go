@@ -4,10 +4,12 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	canonicaljson "github.com/docker/go/canonical/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/engineerd/signy/pkg/cnab"
+	"github.com/engineerd/signy/pkg/intoto"
 	"github.com/engineerd/signy/pkg/tuf"
 )
 
@@ -16,6 +18,12 @@ type signCmd struct {
 	thick   bool
 	file    string
 	rootKey string
+
+	intoto bool
+	layout string
+	// TODO: figure out a way to pass layout root key to TUF (not in the custom object)
+	layoutKey string
+	linkDir   string
 }
 
 func newSignCmd() *cobra.Command {
@@ -76,14 +84,35 @@ Pushed trust data for localhost:5000/thick-bundle-signature:v1: cd205919129bff13
 			return sign.run()
 		},
 	}
-	cmd.Flags().StringVarP(&sign.rootKey, "rootkey", "", "", "Root key to initialize the repository with")
-	cmd.Flags().BoolVarP(&sign.thick, "thick", "", false, "Signs a thick bundle. If passed, only the signature is pushed to the trust server, not the bundle file.")
+	cmd.Flags().StringVarP(&sign.rootKey, "root-key", "", "", "Root key to initialize the repository with")
+	cmd.Flags().BoolVarP(&sign.thick, "thick", "", false, "Signs a thick bundle. If passed, only the signature is pushed to the trust server, not the bundle file")
+
+	cmd.Flags().BoolVarP(&sign.intoto, "in-toto", "", false, "Adds in-toto metadata to TUF. If passed, the root layout, links directory, and root kyes must be supplied")
+	cmd.Flags().StringVarP(&sign.layout, "layout", "", "", "Path to the in-toto root layout file")
+	cmd.Flags().StringVarP(&sign.linkDir, "links", "", "", "Path to the in-toto links directory")
+	cmd.Flags().StringVarP(&sign.layoutKey, "layout-key", "", "", "Path to the in-toto root layout public keys")
 
 	return cmd
 }
 
 func (s *signCmd) run() error {
-	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
+	var cm *canonicaljson.RawMessage
+	if s.intoto {
+		log.Infof("Adding In-Toto layout and links metadata to TUF")
+		err := intoto.ValidateFromPath(s.layout)
+		if err != nil {
+			return fmt.Errorf("validation for in-toto metadata failed: %v", err)
+		}
+		custom, err := intoto.GetMetadataRawMessage(s.layout, s.linkDir, s.layoutKey)
+		if err != nil {
+			return fmt.Errorf("cannot get metadata message: %v", err)
+		}
+		// TODO: Radu M
+		// Refactor GetMatedataRawMessage to return a pointer to a raw message
+		cm = &custom
+	}
+
+	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, cm)
 	if err != nil {
 		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
