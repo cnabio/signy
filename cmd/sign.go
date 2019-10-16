@@ -31,6 +31,18 @@ export SIGNY_DELEGATION_PASSPHRASE
 
 For more info on managing the signing keys, see https://docs.docker.com/notary/advanced_usage/
 
+Example: computes the SHA256 digest of a canonical CNAB bundle, pushes it to the trust server, then pushes the bundle using CNAB-TO-OCI
+
+$ signy sign bundle.json docker.io/<user>/<repo>:<tag>
+Root key found, using: d701ba005e6d217c7eb6cb56dbc6cf0bd81f41347927acbca1318131cc693fc9
+
+Pushed trust data for docker.io/<user>/<repo>:<tag>: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+Starting to copy image cnab/helloworld:0.1.1...
+Completed image cnab/helloworld:0.1.1 copy
+
+Generated relocation map: bundle.ImageRelocationMap{"cnab/helloworld:0.1.1":"docker.io/radumatei/signed-cnab-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
+Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71ad1289cca45e661153fc9a46e"
+
 Example: computes the SHA256 digest of a thick bundle, pushes it to a trust sever
 
 $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign helloworld-0.1.1.tgz --thick  localhost:5000/thick-bundle-signature:v1
@@ -50,18 +62,6 @@ Enter passphrase for new snapshot key with ID d12e8e4:
 Repeat passphrase for new snapshot key with ID d12e8e4:
 
 Pushed trust data for localhost:5000/thick-bundle-signature:v1: cd205919129bff138a3402b4de5abbbc1d310ec982e83a780ffee1879adda678
-
-Example: computes the SHA256 digest of a canonical CNAB bundle, pushes it to the trust server, then pushes the bundle using CNAB-TO-OCI
-
-$ signy sign bundle.json docker.io/<user>/<repo>:<tag>
-Root key found, using: d701ba005e6d217c7eb6cb56dbc6cf0bd81f41347927acbca1318131cc693fc9
-
-Pushed trust data for docker.io/<user>/<repo>:<tag>: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
-Starting to copy image cnab/helloworld:0.1.1...
-Completed image cnab/helloworld:0.1.1 copy
-
-Generated relocation map: bundle.ImageRelocationMap{"cnab/helloworld:0.1.1":"docker.io/radumatei/signed-cnab-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
-Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71ad1289cca45e661153fc9a46e"
 `
 	sign := signCmd{}
 	cmd := &cobra.Command{
