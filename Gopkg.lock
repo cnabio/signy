@@ -274,7 +274,7 @@
   revision = "83389a148052d74ac602f5f1d62f86ff2f3c4aa5"
 
 [[projects]]
-  digest = "1:7916f8515f9cef96341dc51e25e72c55ee7bb851129d09c9a4bb612e8624037e"
+  digest = "1:9ca65acfc137fecbcff00a787bcaf6faf039f1dac6cea81e3de3405851452fa0"
   name = "github.com/docker/docker"
   packages = [
     "api",
@@ -301,7 +301,6 @@
     "pkg/jsonmessage",
     "pkg/longpath",
     "pkg/mount",
-    "pkg/stdcopy",
     "pkg/stringid",
     "pkg/system",
     "pkg/tarsum",
@@ -545,6 +544,14 @@
   pruneopts = "UT"
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
+
+[[projects]]
+  digest = "1:860c25446f565f998eb698ddc033e9e43b2546eb950b20aca28f30ba73deb86d"
+  name = "github.com/oklog/ulid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "be3bccf06dda9a40aa6800c4736ac77f2fef987f"
+  version = "v2.0.2"
 
 [[projects]]
   digest = "1:ee4d4af67d93cc7644157882329023ce9a7bcfce956a079069a9405521c7cc8d"
@@ -1054,10 +1061,10 @@
     "github.com/docker/docker/api/types/container",
     "github.com/docker/docker/client",
     "github.com/docker/docker/pkg/jsonmessage",
-    "github.com/docker/docker/pkg/stdcopy",
     "github.com/docker/docker/registry",
     "github.com/docker/go/canonical/json",
     "github.com/in-toto/in-toto-golang/in_toto",
+    "github.com/oklog/ulid",
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/stretchr/testify/assert",

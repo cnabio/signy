@@ -2,14 +2,16 @@ package docker
 
 import (
 	"archive/tar"
+	"bufio"
 	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
+	"math/rand"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/docker/cli/cli/command"
 	cliflags "github.com/docker/cli/cli/flags"
@@ -18,13 +20,19 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/jsonmessage"
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/docker/registry"
+	"github.com/oklog/ulid"
+	log "github.com/sirupsen/logrus"
+)
+
+const (
+	layoutPath = "/in-toto/layout.template"
+	keyPath    = "/in-toto/key.pub"
 )
 
 // Run will start a container, copy all In-Toto metadata in /in-toto
 // then run in-toto-verification
-func Run(image, layout, key, linksDir string, targetFiles []string) error {
+func Run(image, layout, key, linksDir, logLevel string, targetFiles []string) error {
 	ctx := context.Background()
 	cli, err := initializeDockerCli()
 	if err != nil {
@@ -32,17 +40,19 @@ func Run(image, layout, key, linksDir string, targetFiles []string) error {
 	}
 
 	cfg := &container.Config{
-		Image:      image,
-		WorkingDir: "/in-toto",
-		Cmd:        []string{"in-toto-verify", "--layout", "layout.template", "--layout-keys", "key.pub", "--link-dir", "/in-toto", "--verbose"},
-		//Cmd:          []string{"sleep", "500"},
+		Image:        image,
+		WorkingDir:   "/in-toto",
+		Cmd:          []string{"in-toto-verify", "--layout", "layout.template", "--layout-keys", "key.pub", "--link-dir", "/in-toto", "--verbose"},
 		AttachStderr: true,
 		AttachStdout: true,
+		Tty:          true,
 	}
-	resp, err := cli.Client().ContainerCreate(ctx, cfg, &container.HostConfig{}, nil, "ver")
+
+	name := fmt.Sprintf("intoto-verifications-%s", getULID())
+	resp, err := cli.Client().ContainerCreate(ctx, cfg, &container.HostConfig{}, nil, name)
 	switch {
 	case client.IsErrNotFound(err):
-		fmt.Fprintf(cli.Err(), "Unable to find image '%s' locally\n", image)
+		log.Errorf("Unable to find image '%s' locally", image)
 		if err := pullImage(ctx, cli, image); err != nil {
 			return err
 		}
@@ -59,48 +69,40 @@ func Run(image, layout, key, linksDir string, targetFiles []string) error {
 	if err != nil {
 		return err
 	}
-
 	arch, err := generateArchive(files)
 	if err != nil {
 		return err
 	}
-
 	copyOpts := types.CopyToContainerOptions{
 		AllowOverwriteDirWithFile: false,
 	}
-
 	err = cli.Client().CopyToContainer(ctx, resp.ID, "/", arch, copyOpts)
 	if err != nil {
 		return err
 	}
 
-	attach, err := cli.Client().ContainerAttach(ctx, resp.ID, types.ContainerAttachOptions{
-		Stream: true,
-		Stdout: true,
-		Stderr: true,
-		Logs:   true,
-	})
-	if err != nil {
-		return fmt.Errorf("unable to retrieve logs: %v", err)
+	if err = cli.Client().ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+		return fmt.Errorf("cannot start container: %v", err)
 	}
-
-	var stdout io.Writer = os.Stdout
-	var stderr io.Writer = os.Stderr
-
 	go func() {
-		defer attach.Close()
-		for {
-			_, err := stdcopy.StdCopy(stdout, stderr, attach.Reader)
-			if err != nil {
-				break
-			}
+		reader, err := cli.Client().ContainerLogs(context.Background(), resp.ID, types.ContainerLogsOptions{
+			ShowStdout: true,
+			ShowStderr: true,
+			Follow:     true,
+			Timestamps: false,
+		})
+		if err != nil {
+			panic(err)
+		}
+		defer reader.Close()
+
+		scanner := bufio.NewScanner(reader)
+		for scanner.Scan() {
+			log.Infof(scanner.Text())
 		}
 	}()
 
 	statusc, errc := cli.Client().ContainerWait(ctx, resp.ID, container.WaitConditionNextExit)
-	if err = cli.Client().ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return fmt.Errorf("cannot start container: %v", err)
-	}
 	select {
 	case err := <-errc:
 		if err != nil {
@@ -162,7 +164,7 @@ func generateArchive(files map[string][]byte) (io.Reader, error) {
 
 	go func() {
 		for p, c := range files {
-			fmt.Printf("copying file %v in container for verification...\n", p)
+			log.Infof("copying file %v in container for verification...", p)
 			hdr := &tar.Header{
 				Name: p,
 				Mode: 0644,
@@ -221,7 +223,8 @@ func buildFileMap(layout, key, linksDir string, targeFiles []string) (map[string
 	return files, nil
 }
 
-const (
-	layoutPath = "/in-toto/layout.template"
-	keyPath    = "/in-toto/key.pub"
-)
+func getULID() string {
+	t := time.Unix(1000000, 0)
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
+	return ulid.MustNew(ulid.Timestamp(t), entropy).String()
+}

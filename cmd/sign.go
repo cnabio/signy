@@ -4,10 +4,12 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	canonicaljson "github.com/docker/go/canonical/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/engineerd/signy/pkg/cnab"
+	"github.com/engineerd/signy/pkg/intoto"
 	"github.com/engineerd/signy/pkg/tuf"
 )
 
@@ -16,6 +18,12 @@ type signCmd struct {
 	thick   bool
 	file    string
 	rootKey string
+
+	intoto bool
+	layout string
+	// TODO: figure out a way to pass layout root key to TUF (not in the custom object)
+	layoutKey string
+	linkDir   string
 }
 
 func newSignCmd() *cobra.Command {
@@ -34,35 +42,29 @@ For more info on managing the signing keys, see https://docs.docker.com/notary/a
 
 Example: computes the SHA256 digest of a canonical CNAB bundle, pushes it to the trust server, then pushes the bundle using CNAB-TO-OCI
 
-$ signy sign bundle.json docker.io/<user>/<repo>:<tag>
-Root key found, using: d701ba005e6d217c7eb6cb56dbc6cf0bd81f41347927acbca1318131cc693fc9
-
-Pushed trust data for docker.io/<user>/<repo>:<tag>: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
-Starting to copy image cnab/helloworld:0.1.1...
-Completed image cnab/helloworld:0.1.1 copy
-
-Generated relocation map: bundle.ImageRelocationMap{"cnab/helloworld:0.1.1":"docker.io/radumatei/signed-cnab-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
-Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71ad1289cca45e661153fc9a46e"
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-bundle:v1
+INFO[0000] Pushed trust data for localhost:5000/thin-bundle:v1: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
+INFO[0000] Starting to copy image cnab/helloworld:0.1.1
+INFO[0002] Completed image cnab/helloworld:0.1.1 copy
+INFO[0002] Generated relocation map: relocation.ImageRelocationMap{"cnab/helloworld:0.1.1":"localhost:5000/thin-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
+INFO[0002] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9ea1f979129e09a021a8f40abc07f736de9268"
 
 Example: computes the SHA256 digest of a thick bundle, pushes it to a trust sever
 
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign helloworld-0.1.1.tgz --thick  localhost:5000/thick-bundle-signature:v1
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign --thick testdata/cnab/helloworld-0.1.1.tgz localhost:5000/thick-bundle:v1
+INFO[0000] Pushed trust data for localhost:5000/thick-bundle:v1: 540cc4dc213548ebbdffb2ab0ef58729e089d1887edbcde6eeca851de624da70
 
-You are about to create a new root signing key passphrase. This passphrase
-will be used to protect the most sensitive key in your signing system. Please
-choose a long, complex passphrase and be careful to keep the password and the
-key file itself secure and backed up. It is highly recommended that you use a
-password manager to generate the passphrase and keep it safe. There will be no
-way to recover this key. You can find the key in your config directory.
+In order to also push in-toto metadata to the TUF collection, use the --in-toto flag, together with --layout, --links, and (temporarily?) --layout-key.
 
-Enter passphrase for new root key with ID d701ba0:
-Repeat passphrase for new root key with ID d701ba0:
-Enter passphrase for new targets key with ID 5113934:
-Repeat passphrase for new targets key with ID 5113934:
-Enter passphrase for new snapshot key with ID d12e8e4:
-Repeat passphrase for new snapshot key with ID d12e8e4:
+Example:
 
-Pushed trust data for localhost:5000/thick-bundle-signature:v1: cd205919129bff138a3402b4de5abbbc1d310ec982e83a780ffee1879adda678
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/demo.layout.template --links testdata/intoto --layout-key testdata/intoto/alice.pub
+INFO[0000] Adding In-Toto layout and links metadata to TUF
+INFO[0000] Pushed trust data for localhost:5000/thin-intoto:v2: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
+INFO[0000] Starting to copy image cnab/helloworld:0.1.1
+INFO[0001] Completed image cnab/helloworld:0.1.1 copy
+INFO[0001] Generated relocation map: relocation.ImageRelocationMap{"cnab/helloworld:0.1.1":"localhost:5000/thin-intoto@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
+INFO[0001] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9ea1f979129e09a021a8f40abc07f736de9268"
 `
 	sign := signCmd{}
 	cmd := &cobra.Command{
@@ -76,14 +78,38 @@ Pushed trust data for localhost:5000/thick-bundle-signature:v1: cd205919129bff13
 			return sign.run()
 		},
 	}
-	cmd.Flags().StringVarP(&sign.rootKey, "rootkey", "", "", "Root key to initialize the repository with")
-	cmd.Flags().BoolVarP(&sign.thick, "thick", "", false, "Signs a thick bundle. If passed, only the signature is pushed to the trust server, not the bundle file.")
+	cmd.Flags().StringVarP(&sign.rootKey, "root-key", "", "", "Root key to initialize the repository with")
+	cmd.Flags().BoolVarP(&sign.thick, "thick", "", false, "Signs a thick bundle. If passed, only the signature is pushed to the trust server, not the bundle file")
+
+	cmd.Flags().BoolVarP(&sign.intoto, "in-toto", "", false, "Adds in-toto metadata to TUF. If passed, the root layout, links directory, and root kyes must be supplied")
+	cmd.Flags().StringVarP(&sign.layout, "layout", "", "", "Path to the in-toto root layout file")
+	cmd.Flags().StringVarP(&sign.linkDir, "links", "", "", "Path to the in-toto links directory")
+	cmd.Flags().StringVarP(&sign.layoutKey, "layout-key", "", "", "Path to the in-toto root layout public keys")
 
 	return cmd
 }
 
 func (s *signCmd) run() error {
-	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
+	var cm *canonicaljson.RawMessage
+	if s.intoto {
+		if s.layout == "" || s.layoutKey == "" || s.linkDir == "" {
+			return fmt.Errorf("required in-toto metadata not found")
+		}
+		log.Infof("Adding In-Toto layout and links metadata to TUF")
+		err := intoto.ValidateFromPath(s.layout)
+		if err != nil {
+			return fmt.Errorf("validation for in-toto metadata failed: %v", err)
+		}
+		custom, err := intoto.GetMetadataRawMessage(s.layout, s.linkDir, s.layoutKey)
+		if err != nil {
+			return fmt.Errorf("cannot get metadata message: %v", err)
+		}
+		// TODO: Radu M
+		// Refactor GetMatedataRawMessage to return a pointer to a raw message
+		cm = &custom
+	}
+
+	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, cm)
 	if err != nil {
 		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}

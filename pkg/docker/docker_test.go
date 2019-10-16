@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,6 +17,6 @@ func TestRun(t *testing.T) {
 	links := testDir
 	targets := []string{filepath.Join(testDir, "foo.tar.gz")}
 
-	err := Run(image, layout, key, links, targets)
+	err := Run(image, layout, key, links, log.InfoLevel.String(), targets)
 	assert.NoError(t, err)
 }

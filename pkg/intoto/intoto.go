@@ -10,6 +10,7 @@ import (
 
 	canonicaljson "github.com/docker/go/canonical/json"
 	"github.com/in-toto/in-toto-golang/in_toto"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -41,7 +42,7 @@ func Verify(layout, linkDir string, layoutKeyPaths ...string) error {
 		return fmt.Errorf("failed verification: %v", err)
 	}
 
-	fmt.Printf("Verification succeeded for layout %v.\n", layout)
+	log.Infof("Verification succeeded for layout %v", layout)
 	return nil
 }
 
