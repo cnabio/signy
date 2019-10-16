@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 
 	"github.com/docker/go/canonical/json"
+	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary/client"
 
 	"github.com/engineerd/signy/pkg/cnab"
@@ -18,9 +19,9 @@ func VerifyCNABTrust(ref, trustServer, tlscacert, trustDir string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
+	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
 
-	fmt.Printf("\nPulling bundle from registry: %v", ref)
+	log.Infof("Pulling bundle from registry: %v", ref)
 	bun, err := cnab.Pull(ref)
 	if err != nil {
 		return fmt.Errorf("cannot pull bundle: %v", err)
@@ -32,7 +33,7 @@ func VerifyCNABTrust(ref, trustServer, tlscacert, trustDir string) error {
 
 	err = verifyTargetSHAFromBytes(target, buf)
 	if err == nil {
-		fmt.Printf("\nThe SHA sums are equal: %v\n", trustedSHA)
+		log.Infof("The SHA sums are equal: %v\n", trustedSHA)
 	}
 
 	return err
@@ -44,7 +45,7 @@ func VerifyFileTrust(ref, localFile, trustServer, tlscacert, trustDir string) er
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
+	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
 
 	buf, err := ioutil.ReadFile(localFile)
 	if err != nil {
@@ -53,7 +54,7 @@ func VerifyFileTrust(ref, localFile, trustServer, tlscacert, trustDir string) er
 
 	err = verifyTargetSHAFromBytes(target, buf)
 	if err == nil {
-		fmt.Printf("\nThe SHA sums are equal: %v\n", trustedSHA)
+		log.Infof("The SHA sums are equal: %v\n", trustedSHA)
 	}
 
 	return err
@@ -64,12 +65,12 @@ func verifyTargetSHAFromBytes(target *client.TargetWithRole, buf []byte) error {
 	hasher := sha256.New()
 	hasher.Write(buf)
 	computedSHA := hex.EncodeToString(hasher.Sum(nil))
-	fmt.Printf("\nComputed SHA: %v\n", computedSHA)
+
+	log.Infof("Computed SHA: %v\n", computedSHA)
 	if trustedSHA != computedSHA {
 		return fmt.Errorf("the digest sum of the artifact from the trusted collection %v is not equal to the computed digest %v",
 			trustedSHA, computedSHA)
 	}
-
 	return nil
 }
 

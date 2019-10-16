@@ -1058,6 +1058,7 @@
     "github.com/docker/docker/registry",
     "github.com/docker/go/canonical/json",
     "github.com/in-toto/in-toto-golang/in_toto",
+    "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/stretchr/testify/assert",
     "github.com/theupdateframework/notary",
