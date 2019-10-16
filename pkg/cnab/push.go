@@ -10,6 +10,7 @@ import (
 	"github.com/docker/cnab-to-oci/remotes"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/client"
+	log "github.com/sirupsen/logrus"
 )
 
 // Push pushes a bundle to an OCI registry
@@ -45,12 +46,12 @@ func Push(bundleFile, ref string) error {
 		return err
 	}
 
-	fmt.Printf("\nGenerated relocation map: %#v", relocationMap)
+	log.Infof("Generated relocation map: %#v", relocationMap)
 	d, err := remotes.Push(context.Background(), &b, relocationMap, n, resolver, true)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("\nPushed successfully, with digest %q\n", d.Digest)
+	log.Infof("Pushed successfully, with digest %q\n", d.Digest)
 	return nil
 }

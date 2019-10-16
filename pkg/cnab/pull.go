@@ -2,11 +2,11 @@ package cnab
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/deislabs/cnab-go/bundle"
 	"github.com/docker/cnab-to-oci/remotes"
 	"github.com/docker/distribution/reference"
+	log "github.com/sirupsen/logrus"
 )
 
 // Pull pulls a bundle from an OCI registry
@@ -17,7 +17,7 @@ func Pull(ref string) (*bundle.Bundle, error) {
 	}
 
 	b, relocationMap, err := remotes.Pull(context.Background(), n, createResolver(nil))
-	fmt.Println("\nRelocation map", relocationMap)
+	log.Debugf("Relocation map: %v", relocationMap)
 	if err != nil {
 		return nil, err
 	}

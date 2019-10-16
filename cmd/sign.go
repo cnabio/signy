@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/engineerd/signy/pkg/cnab"
@@ -86,7 +87,8 @@ func (s *signCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
-	fmt.Printf("\nPushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
+
+	log.Infof("Pushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
 
 	if s.thick {
 		return nil
