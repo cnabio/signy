@@ -33,5 +33,5 @@ func newIntotoVerifyCmd() *cobra.Command {
 }
 
 func (i *intotoVerifyCmd) run() error {
-	return trust.Validate(i.ref, "", trustServer, tlscacert, trustDir, i.verificationImage, i.targetFiles, i.keepTempDir)
+	return trust.Validate(i.ref, trustServer, tlscacert, trustDir, i.verificationImage, i.targetFiles, i.keepTempDir)
 }

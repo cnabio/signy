@@ -24,18 +24,9 @@ can also be validated against a local bundle.json file in canonical form, passed
 For plaintext artifacts, the target from the trusted collection must be validated against a local file passed
 through the --local flag.
 
-Example: verifies the metadata for a plaintext file (must be already pushed):
-
-$ signy sign --type plaintext file.txt docker.io/<user>/<repo>:<tag>
-Pushed trust data for docker.io/<user>/<repo>:<tag> : cf8916940c7f8b5eb747b9e056c32895176da9f0136033659929310540bef672
-$ signy verify --type plaintext --local file.txt docker.io/<user>/<repo>:<tag>
-Pulled trust data for docker.io/<user>/<repo>:<tag>, with role targets - SHA256: cf8916940c7f8b5eb747b9e056c32895176da9f0136033659929310540bef672
-Computed SHA: cf8916940c7f8b5eb747b9e056c32895176da9f0136033659929310540bef672
-The SHA sums are equal: cf8916940c7f8b5eb747b9e056c32895176da9f0136033659929310540bef672
-
 Example: verifies the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry
 
-$ signy verify --type cnab docker.io/<user>/<repo>:<tag>
+$ signy verify docker.io/<user>/<repo>:<tag>
 Pulled trust data for docker.io/<user>/<repo>:<tag>, with role targets - SHA256: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
 Pulling bundle from registry: docker.io/<user>/<repo>:<tag>
 Relocation map map[cnab/helloworld:0.1.1:radumatei/signed-cnab@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6]
@@ -43,16 +34,12 @@ Relocation map map[cnab/helloworld:0.1.1:radumatei/signed-cnab@sha256:a59a4e74d9
 Computed SHA: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
 The SHA sums are equal: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
 
-Example: verifies the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry and against a local file
+Example: verifies the metadata for a local thick bundle:
 
-$ signy verify --type cnab --local bundle.json docker.io/<user>/<repo>:<tag>
-Pulled trust data for docker.io/<user>/<repo>:<tag>, with role targets - SHA256: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
-Pulling bundle from registry: docker.io/<user>/<repo>:<tag>
-Relocation map map[cnab/helloworld:0.1.1:radumatei/signed-cnab@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6]
-
-Computed SHA: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
-Computed SHA: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
-The SHA sums are equal: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify --thick --local helloworld-0.1.1.tgz localhost:5000/thick-bundle-signature:v1
+Pulled trust data for localhost:5000/thick-bundle-signature:v1, with role targets - SHA256: cd205919129bff138a3402b4de5abbbc1d310ec982e83a780ffee1879adda678
+Computed SHA: cd205919129bff138a3402b4de5abbbc1d310ec982e83a780ffee1879adda678
+The SHA sums are equal: cd205919129bff138a3402b4de5abbbc1d310ec982e83a780ffee1879adda678
 `
 	verify := verifyCmd{}
 	cmd := &cobra.Command{
@@ -65,7 +52,7 @@ The SHA sums are equal: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e92
 		},
 	}
 	cmd.Flags().BoolVarP(&verify.thick, "thick", "", false, "Verifies a thick bundle. If passed, only the signature is pulled from the trust server, and is verified against a local thick bundle.")
-	cmd.Flags().StringVarP(&verify.localFile, "local", "", "", "Local file to validate the SHA256 against (mandatory for plaintext artifacts).")
+	cmd.Flags().StringVarP(&verify.localFile, "local", "", "", "Local file to validate the SHA256 against (mandatory for thick bundles).")
 
 	return cmd
 }
@@ -73,11 +60,10 @@ The SHA sums are equal: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e92
 func (v *verifyCmd) run() error {
 	if v.thick {
 		if v.localFile == "" {
-			return fmt.Errorf("no local file provided for plain text verification")
+			return fmt.Errorf("no local file provided for thick bundle verification")
 		}
-		return tuf.VerifyPlainTextTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
+		return tuf.VerifyFileTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
 	}
 
-	_, err := tuf.VerifyCNABTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
-	return err
+	return tuf.VerifyCNABTrust(v.ref, trustServer, tlscacert, trustDir)
 }

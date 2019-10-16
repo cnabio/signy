@@ -13,8 +13,13 @@ import (
 )
 
 // Validate performs all trust validations
-func Validate(ref, localFile, trustServer, tlscacert, trustDir, verificationImage string, targets []string, keep bool) error {
-	target, err := tuf.VerifyCNABTrust(ref, localFile, trustServer, tlscacert, trustDir)
+func Validate(ref, trustServer, tlscacert, trustDir, verificationImage string, targets []string, keep bool) error {
+	err := tuf.VerifyCNABTrust(ref, trustServer, tlscacert, trustDir)
+	if err != nil {
+		return err
+	}
+
+	target, _, err := tuf.GetTargetAndSHA(ref, trustServer, tlscacert, trustDir)
 	if err != nil {
 		return err
 	}
