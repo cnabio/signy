@@ -9,6 +9,7 @@ import (
 	"github.com/deislabs/cnab-go/bundle"
 	"github.com/docker/cnab-to-oci/remotes"
 	"github.com/docker/distribution/reference"
+	"github.com/docker/docker/client"
 )
 
 // Push pushes a bundle to an OCI registry
@@ -29,9 +30,16 @@ func Push(bundleFile, ref string) error {
 		return err
 	}
 
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		return err
+	}
+
 	relocationMap, err := remotes.FixupBundle(context.Background(), &b, n, resolver, remotes.WithEventCallback(displayEvent),
 		remotes.WithInvocationImagePlatforms(nil),
-		remotes.WithAutoBundleUpdate(),
+		// we explicitly DO NOT want to update the bundle file after the trust data has been pushed
+		// remotes.WithAutoBundleUpdate(),
+		remotes.WithPushImages(cli),
 		remotes.WithComponentImagePlatforms(nil))
 	if err != nil {
 		return err

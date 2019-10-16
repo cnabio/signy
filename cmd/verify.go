@@ -9,24 +9,24 @@ import (
 )
 
 type verifyCmd struct {
-	ref          string
-	artifactType string
-	localFile    string
+	ref       string
+	thick     bool
+	localFile string
 }
 
 func newVerifyCmd() *cobra.Command {
 	const verifyDesc = `
 Pulls the metadata for a target from a trusted collection and checks that the trusted digest
 equals the digest of the existing artifact.
-For CNAB, the bundle is pulled from the OCI registry, and the two digests are compared. Optionally, the digests 
+For CNAB, the bundle is pulled from the OCI registry, and the two digests are compared. Optionally, the digests
 can also be validated against a local bundle.json file in canonical form, passed through the --local flag.
 
-For plaintext artifacts, the target from the trusted collection must be validated against a local file passed 
+For plaintext artifacts, the target from the trusted collection must be validated against a local file passed
 through the --local flag.
 
 Example: verifies the metadata for a plaintext file (must be already pushed):
 
-$ signy sign --type plaintext file.txt docker.io/<user>/<repo>:<tag>                                                             
+$ signy sign --type plaintext file.txt docker.io/<user>/<repo>:<tag>
 Pushed trust data for docker.io/<user>/<repo>:<tag> : cf8916940c7f8b5eb747b9e056c32895176da9f0136033659929310540bef672
 $ signy verify --type plaintext --local file.txt docker.io/<user>/<repo>:<tag>
 Pulled trust data for docker.io/<user>/<repo>:<tag>, with role targets - SHA256: cf8916940c7f8b5eb747b9e056c32895176da9f0136033659929310540bef672
@@ -64,23 +64,20 @@ The SHA sums are equal: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e92
 			return verify.run()
 		},
 	}
-	cmd.Flags().StringVarP(&verify.artifactType, "type", "", "plaintext", "Type of the artifact.")
+	cmd.Flags().BoolVarP(&verify.thick, "thick", "", false, "Verifies a thick bundle. If passed, only the signature is pulled from the trust server, and is verified against a local thick bundle.")
 	cmd.Flags().StringVarP(&verify.localFile, "local", "", "", "Local file to validate the SHA256 against (mandatory for plaintext artifacts).")
 
 	return cmd
 }
 
 func (v *verifyCmd) run() error {
-	switch v.artifactType {
-	case "plaintext":
+	if v.thick {
 		if v.localFile == "" {
 			return fmt.Errorf("no local file provided for plain text verification")
 		}
 		return tuf.VerifyPlainTextTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
-	case "cnab":
-		_, err := tuf.VerifyCNABTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
-		return err
-	default:
-		return fmt.Errorf("unknown type")
 	}
+
+	_, err := tuf.VerifyCNABTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
+	return err
 }

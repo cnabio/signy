@@ -11,15 +11,15 @@ import (
 )
 
 type signCmd struct {
-	ref          string
-	file         string
-	artifactType string
-	rootKey      string
+	ref     string
+	thick   bool
+	file    string
+	rootKey string
 }
 
 func newSignCmd() *cobra.Command {
 	const signDesc = `
-Pushes the metadata of an artifact to a trust collection on a remote server, and based on the type, 
+Pushes the metadata of an artifact to a trust collection on a remote server, and based on the type,
 it pushes the actual artifact to a repository. Currently, the supported artifact types are plaintext and cnab.
 
 On the first push to a repository, it also generates the signing keys.
@@ -34,7 +34,7 @@ Example: computes the SHA256 digest of plaintext file, then pushes it to the tru
 
 For more info on managing the signing keys, see https://docs.docker.com/notary/advanced_usage/
 
-$ signy sign --type plaintext file.txt docker.io/<user>/<repo>:<tag>
+$ signy sign <file> docker.io/<user>/<repo>:<tag>
 You are about to create a new root signing key passphrase. This passphrase
 will be used to protect the most sensitive key in your signing system. Please
 choose a long, complex passphrase and be careful to keep the password and the
@@ -76,26 +76,22 @@ Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71
 			return sign.run()
 		},
 	}
-	cmd.Flags().StringVarP(&sign.artifactType, "type", "", "plaintext", "Type of the artifact")
 	cmd.Flags().StringVarP(&sign.rootKey, "rootkey", "", "", "Root key to initialize the repository with")
+	cmd.Flags().BoolVarP(&sign.thick, "thick", "", false, "Signs a thick bundle. If passed, only the signature is pushed to the trust server, not the bundle file.")
 
 	return cmd
 }
 
 func (s *signCmd) run() error {
-	switch s.artifactType {
-	case "plaintext":
-		target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
-		fmt.Printf("\nPushed trust data for %v: %v \n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
-		return err
-	case "cnab":
-		target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
-		if err != nil {
-			return fmt.Errorf("cannot sign and publish trust data: %v", err)
-		}
-		fmt.Printf("\nPushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
-		return cnab.Push(s.file, s.ref)
-	default:
-		return fmt.Errorf("unknown type")
+	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
+	if err != nil {
+		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
+	fmt.Printf("\nPushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
+
+	if s.thick {
+		return nil
+	}
+
+	return cnab.Push(s.file, s.ref)
 }
