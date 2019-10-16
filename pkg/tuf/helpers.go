@@ -23,6 +23,7 @@ import (
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/docker/distribution/registry/client/transport"
 	"github.com/docker/docker/api/types"
+	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/cryptoservice"
@@ -129,7 +130,7 @@ func importRootKey(rootKey string, nRepo client.Repository, retriever notary.Pas
 		// Chooses the first root key available, which is initialization specific
 		// but should return the HW one first.
 		rootKeyID := rootKeyList[0]
-		fmt.Printf("Root key found, using: %s\n", rootKeyID)
+		log.Infof("Root key found, using: %s\n", rootKeyID)
 
 		return []string{rootKeyID}, nil
 	}

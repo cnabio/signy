@@ -1,13 +1,13 @@
 package cnab
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	containerdRemotes "github.com/containerd/containerd/remotes"
 	"github.com/docker/cli/cli/config"
 	"github.com/docker/cnab-to-oci/remotes"
+	log "github.com/sirupsen/logrus"
 )
 
 func createResolver(insecureRegistries []string) containerdRemotes.Resolver {
@@ -17,12 +17,12 @@ func createResolver(insecureRegistries []string) containerdRemotes.Resolver {
 func displayEvent(ev remotes.FixupEvent) {
 	switch ev.EventType {
 	case remotes.FixupEventTypeCopyImageStart:
-		fmt.Fprintf(os.Stderr, "Starting to copy image %s...\n", ev.SourceImage)
+		log.Infof("Starting to copy image %s", ev.SourceImage)
 	case remotes.FixupEventTypeCopyImageEnd:
 		if ev.Error != nil {
-			fmt.Fprintf(os.Stderr, "Failed to copy image %s: %s\n", ev.SourceImage, ev.Error)
+			log.Infof("Failed to copy image %s: %s", ev.SourceImage, ev.Error)
 		} else {
-			fmt.Fprintf(os.Stderr, "Completed image %s copy\n", ev.SourceImage)
+			log.Infof("Completed image %s copy", ev.SourceImage)
 		}
 	}
 }
