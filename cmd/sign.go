@@ -11,18 +11,17 @@ import (
 )
 
 type signCmd struct {
-	ref          string
-	file         string
-	artifactType string
-	rootKey      string
+	ref     string
+	thick   bool
+	file    string
+	rootKey string
 }
 
 func newSignCmd() *cobra.Command {
 	const signDesc = `
-Pushes the metadata of an artifact to a trust collection on a remote server, and based on the type, 
-it pushes the actual artifact to a repository. Currently, the supported artifact types are plaintext and cnab.
-
-On the first push to a repository, it also generates the signing keys.
+Pushes the metadata of a CNAB bundle to a trust collection on a remote server. If the artifact is a thin bundle, this command
+also pushes it to a repository using CNAB-TO-OCI.
+On the first push to a repository, this command generates the signing keys.
 To avoid introducing the passphrases every time, set the following environment variables with the corresponding passphrases:
 
 export SIGNY_ROOT_PASSPHRASE
@@ -30,11 +29,24 @@ export SIGNY_TARGETS_PASSPHRASE
 export SIGNY_SNAPSHOT_PASSPHRASE
 export SIGNY_DELEGATION_PASSPHRASE
 
-Example: computes the SHA256 digest of plaintext file, then pushes it to the trust server and display the computed SHA256 digest.
-
 For more info on managing the signing keys, see https://docs.docker.com/notary/advanced_usage/
 
-$ signy sign --type plaintext file.txt docker.io/<user>/<repo>:<tag>
+Example: computes the SHA256 digest of a canonical CNAB bundle, pushes it to the trust server, then pushes the bundle using CNAB-TO-OCI
+
+$ signy sign bundle.json docker.io/<user>/<repo>:<tag>
+Root key found, using: d701ba005e6d217c7eb6cb56dbc6cf0bd81f41347927acbca1318131cc693fc9
+
+Pushed trust data for docker.io/<user>/<repo>:<tag>: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
+Starting to copy image cnab/helloworld:0.1.1...
+Completed image cnab/helloworld:0.1.1 copy
+
+Generated relocation map: bundle.ImageRelocationMap{"cnab/helloworld:0.1.1":"docker.io/radumatei/signed-cnab-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
+Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71ad1289cca45e661153fc9a46e"
+
+Example: computes the SHA256 digest of a thick bundle, pushes it to a trust sever
+
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign helloworld-0.1.1.tgz --thick  localhost:5000/thick-bundle-signature:v1
+
 You are about to create a new root signing key passphrase. This passphrase
 will be used to protect the most sensitive key in your signing system. Please
 choose a long, complex passphrase and be careful to keep the password and the
@@ -49,20 +61,7 @@ Repeat passphrase for new targets key with ID 5113934:
 Enter passphrase for new snapshot key with ID d12e8e4:
 Repeat passphrase for new snapshot key with ID d12e8e4:
 
-Pushed trust data for docker.io/<user>/<repo>:tag: cf8916940c7f8b5eb747b9e056c32895176da9f0136033659929310540bef672
-
-
-Example: computes the SHA256 digest of a canonical CNAB bundle, pushes it to the trust server, then pushes the bundle using CNAB-TO-OCI
-
-$ signy sign --type cnab bundle.json docker.io/<user>/<repo>:<tag>
-Root key found, using: d701ba005e6d217c7eb6cb56dbc6cf0bd81f41347927acbca1318131cc693fc9
-
-Pushed trust data for docker.io/<user>/<repo>:<tag>: 607ddb1d998e2155104067f99065659b202b0b19fa9ae52349ba3e9248635475
-Starting to copy image cnab/helloworld:0.1.1...
-Completed image cnab/helloworld:0.1.1 copy
-
-Generated relocation map: bundle.ImageRelocationMap{"cnab/helloworld:0.1.1":"docker.io/radumatei/signed-cnab-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
-Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71ad1289cca45e661153fc9a46e"
+Pushed trust data for localhost:5000/thick-bundle-signature:v1: cd205919129bff138a3402b4de5abbbc1d310ec982e83a780ffee1879adda678
 `
 	sign := signCmd{}
 	cmd := &cobra.Command{
@@ -76,26 +75,22 @@ Pushed successfully, with digest "sha256:086ef83113475d4582a7431b4b9bc98634d4f71
 			return sign.run()
 		},
 	}
-	cmd.Flags().StringVarP(&sign.artifactType, "type", "", "plaintext", "Type of the artifact")
 	cmd.Flags().StringVarP(&sign.rootKey, "rootkey", "", "", "Root key to initialize the repository with")
+	cmd.Flags().BoolVarP(&sign.thick, "thick", "", false, "Signs a thick bundle. If passed, only the signature is pushed to the trust server, not the bundle file.")
 
 	return cmd
 }
 
 func (s *signCmd) run() error {
-	switch s.artifactType {
-	case "plaintext":
-		target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
-		fmt.Printf("\nPushed trust data for %v: %v \n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
-		return err
-	case "cnab":
-		target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
-		if err != nil {
-			return fmt.Errorf("cannot sign and publish trust data: %v", err)
-		}
-		fmt.Printf("\nPushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
-		return cnab.Push(s.file, s.ref)
-	default:
-		return fmt.Errorf("unknown type")
+	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, nil)
+	if err != nil {
+		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
+	fmt.Printf("\nPushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
+
+	if s.thick {
+		return nil
+	}
+
+	return cnab.Push(s.file, s.ref)
 }

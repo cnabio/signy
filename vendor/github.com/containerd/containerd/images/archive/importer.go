@@ -197,7 +197,10 @@ func onUntarJSON(r io.Reader, j interface{}) error {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(b, j)
+	if err := json.Unmarshal(b, j); err != nil {
+		return err
+	}
+	return nil
 }
 
 func onUntarBlob(ctx context.Context, r io.Reader, store content.Ingester, size int64, ref string) (digest.Digest, error) {

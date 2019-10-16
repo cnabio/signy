@@ -26,7 +26,7 @@ func (s *metadataStore) contextDir(id contextdir) string {
 	return filepath.Join(s.root, string(id))
 }
 
-func (s *metadataStore) createOrUpdate(meta Metadata) error {
+func (s *metadataStore) createOrUpdate(meta ContextMetadata) error {
 	contextDir := s.contextDir(contextdirOf(meta.Name))
 	if err := os.MkdirAll(contextDir, 0755); err != nil {
 		return err
@@ -56,26 +56,26 @@ func parseTypedOrMap(payload []byte, getter TypeGetter) (interface{}, error) {
 	return reflect.ValueOf(typed).Elem().Interface(), nil
 }
 
-func (s *metadataStore) get(id contextdir) (Metadata, error) {
+func (s *metadataStore) get(id contextdir) (ContextMetadata, error) {
 	contextDir := s.contextDir(id)
 	bytes, err := ioutil.ReadFile(filepath.Join(contextDir, metaFile))
 	if err != nil {
-		return Metadata{}, convertContextDoesNotExist(err)
+		return ContextMetadata{}, convertContextDoesNotExist(err)
 	}
 	var untyped untypedContextMetadata
-	r := Metadata{
+	r := ContextMetadata{
 		Endpoints: make(map[string]interface{}),
 	}
 	if err := json.Unmarshal(bytes, &untyped); err != nil {
-		return Metadata{}, err
+		return ContextMetadata{}, err
 	}
 	r.Name = untyped.Name
 	if r.Metadata, err = parseTypedOrMap(untyped.Metadata, s.config.contextType); err != nil {
-		return Metadata{}, err
+		return ContextMetadata{}, err
 	}
 	for k, v := range untyped.Endpoints {
 		if r.Endpoints[k], err = parseTypedOrMap(v, s.config.endpointTypes[k]); err != nil {
-			return Metadata{}, err
+			return ContextMetadata{}, err
 		}
 	}
 	return r, err
@@ -86,7 +86,7 @@ func (s *metadataStore) remove(id contextdir) error {
 	return os.RemoveAll(contextDir)
 }
 
-func (s *metadataStore) list() ([]Metadata, error) {
+func (s *metadataStore) list() ([]ContextMetadata, error) {
 	ctxDirs, err := listRecursivelyMetadataDirs(s.root)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -94,7 +94,7 @@ func (s *metadataStore) list() ([]Metadata, error) {
 		}
 		return nil, err
 	}
-	var res []Metadata
+	var res []ContextMetadata
 	for _, dir := range ctxDirs {
 		c, err := s.get(contextdir(dir))
 		if err != nil {

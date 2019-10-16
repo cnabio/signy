@@ -19,10 +19,10 @@ import (
 	"time"
 
 	"github.com/docker/cli/cli/config"
-	"github.com/docker/cli/cli/config/types"
 	"github.com/docker/distribution/registry/client/auth"
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/docker/distribution/registry/client/transport"
+	"github.com/docker/docker/api/types"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/cryptoservice"

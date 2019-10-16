@@ -5,6 +5,7 @@ import (
 	"github.com/containerd/containerd/remotes"
 	"github.com/deislabs/cnab-go/bundle"
 	"github.com/docker/distribution/reference"
+	"github.com/docker/docker/client"
 	ocischemav1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -26,6 +27,8 @@ type fixupConfig struct {
 	invocationImagePlatformFilter platforms.Matcher
 	componentImagePlatformFilter  platforms.Matcher
 	autoBundleUpdate              bool
+	pushImages                    bool
+	imageClient                   client.ImageAPIClient
 }
 
 // FixupOption is a helper for configuring a FixupBundle
@@ -111,6 +114,16 @@ func WithParallelism(maxConcurrentJobs int, jobsBufferLength int) FixupOption {
 func WithAutoBundleUpdate() FixupOption {
 	return func(cfg *fixupConfig) error {
 		cfg.autoBundleUpdate = true
+		return nil
+	}
+}
+
+// WithPushImages authorize the fixup command to push missing images in the registry that are
+// available in the local docker daemon image store.
+func WithPushImages(imageClient client.ImageAPIClient) FixupOption {
+	return func(cfg *fixupConfig) error {
+		cfg.pushImages = true
+		cfg.imageClient = imageClient
 		return nil
 	}
 }
