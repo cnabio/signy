@@ -19,10 +19,10 @@ import (
 	"time"
 
 	"github.com/docker/cli/cli/config"
+	configtypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/distribution/registry/client/auth"
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/docker/distribution/registry/client/transport"
-	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
@@ -34,6 +34,9 @@ import (
 )
 
 const (
+	// DockerNotaryServer is the default Notary server associated with Docker Hub
+	DockerNotaryServer = "https://notary.docker.io"
+
 	configFileDir      = ".docker"
 	defaultIndexServer = "https://index.docker.io/v1/"
 )
@@ -80,7 +83,7 @@ func makeTransport(server, gun, tlsCaCert string) (http.RoundTripper, error) {
 		return nil, fmt.Errorf("cannot add response to challenge manager: %v", err)
 	}
 
-	defaultAuth, err := getDefaultAuth()
+	defaultAuth, err := getAuth(server)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get default credentials: %v", err)
 	}
@@ -218,13 +221,26 @@ func getPassphraseRetriever() notary.PassRetriever {
 	}
 }
 
-func getDefaultAuth() (types.AuthConfig, error) {
-	cfg, err := config.Load(defaultCfgDir())
+func getAuth(server string) (configtypes.AuthConfig, error) {
+	s, err := url.Parse(server)
 	if err != nil {
-		return types.AuthConfig{}, err
+		return configtypes.AuthConfig{}, fmt.Errorf("cannot parse trust server URL: %v", err)
 	}
 
-	return cfg.AuthConfigs[defaultIndexServer], nil
+	cfg, err := config.Load(defaultCfgDir())
+	if err != nil {
+		return configtypes.AuthConfig{}, err
+	}
+
+	auth, ok := cfg.AuthConfigs[s.Hostname()]
+	if !ok {
+		if s.Hostname() == DockerNotaryServer {
+			return cfg.AuthConfigs[defaultIndexServer], nil
+		}
+		return configtypes.AuthConfig{}, fmt.Errorf("authentication not found for trust server %v", server)
+	}
+
+	return auth, nil
 }
 
 func defaultCfgDir() string {
@@ -237,7 +253,7 @@ func defaultCfgDir() string {
 }
 
 type simpleCredentialStore struct {
-	auth types.AuthConfig
+	auth configtypes.AuthConfig
 }
 
 func (scs simpleCredentialStore) Basic(u *url.URL) (string, string) {

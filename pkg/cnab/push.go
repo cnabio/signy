@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/deislabs/cnab-go/bundle"
 	"github.com/docker/cnab-to-oci/remotes"
@@ -36,12 +37,16 @@ func Push(bundleFile, ref string) error {
 		return err
 	}
 
-	relocationMap, err := remotes.FixupBundle(context.Background(), &b, n, resolver, remotes.WithEventCallback(displayEvent),
+	fixupOpts := []remotes.FixupOption{
+		remotes.WithEventCallback(displayEvent),
 		remotes.WithInvocationImagePlatforms(nil),
 		// we explicitly DO NOT want to update the bundle file after the trust data has been pushed
 		// remotes.WithAutoBundleUpdate(),
-		remotes.WithPushImages(cli),
-		remotes.WithComponentImagePlatforms(nil))
+		remotes.WithPushImages(cli, os.Stdout),
+		remotes.WithComponentImagePlatforms(nil),
+	}
+
+	relocationMap, err := remotes.FixupBundle(context.Background(), &b, n, resolver, fixupOpts...)
 	if err != nil {
 		return err
 	}
