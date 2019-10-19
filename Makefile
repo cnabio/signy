@@ -2,6 +2,7 @@ PROJECT         := signy
 ORG             := engineerd
 BINDIR          := $(CURDIR)/bin
 GOFLAGS         :=
+GOBUILDTAGS     := osusergo
 LDFLAGS         := -w -s
 
 ifeq ($(OS),Windows_NT)
@@ -16,7 +17,7 @@ endif
 
 .PHONY: build
 build:
-	go build $(GOFLAGS) -ldflags '$(LDFLAGS)' -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
+	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags '$(LDFLAGS)' -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
 
 .PHONY: test
 test:
