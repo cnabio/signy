@@ -1,6 +1,6 @@
 # Signy
 
-[![Build Status](https://dev.azure.com/engineerd-dev/signy/_apis/build/status/engineerd.signy?branchName=master)](https://dev.azure.com/engineerd-dev/signy/_build/latest?definitionId=5&branchName=master)
+![](https://github.com/engineerd/signy/workflows/GitHub%20Actions/badge.svg) [![Build Status](https://dev.azure.com/engineerd-dev/signy/_apis/build/status/engineerd.signy?branchName=master)](https://dev.azure.com/engineerd-dev/signy/_build/latest?definitionId=5&branchName=master)
 
 Signy is a tool for exercising the TUF and in-toto specifications in order to sign various cloud-native artifacts. It uses the Notary client libraries, and communicates with a Notary server.
 It is an educational project with the purpose of implementing [the entire TUF workflow for signing content](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#5-detailed-workflows), and validate its correctness for [Cloud Native Application Bundles (CNAB)](https://github.com/deislabs/cnab-spec), and it is intended as a WIP reference implementation for its security specification.
