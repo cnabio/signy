@@ -109,7 +109,7 @@ func (s *signCmd) run() error {
 		cm = &custom
 	}
 
-	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, cm)
+	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, timeout, cm)
 	if err != nil {
 		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}

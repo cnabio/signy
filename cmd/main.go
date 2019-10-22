@@ -16,6 +16,7 @@ var (
 	tlscacert   string
 	trustDir    string
 	logLevel    string
+	timeout     string
 )
 var rootCmd = &cobra.Command{
 	Use:   "signy",
@@ -40,8 +41,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&trustServer, "server", "", tuf.DockerNotaryServer, "The trust server used")
 	rootCmd.PersistentFlags().StringVarP(&tlscacert, "tlscacert", "", "", "Trust certs signed only by this CA")
 	rootCmd.PersistentFlags().StringVarP(&trustDir, "dir", "d", defaultTrustDir(), "Directory where the trust data is persisted to")
-
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "info", `Set the logging level ("debug"|"info"|"warn"|"error"|"fatal")`)
+	rootCmd.PersistentFlags().StringVarP(&timeout, "timeout", "t", "5s", `Timeout for the trust server`)
 }
 
 func main() {

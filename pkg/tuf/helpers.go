@@ -41,7 +41,7 @@ const (
 	defaultIndexServer = "https://index.docker.io/v1/"
 )
 
-func makeTransport(server, gun, tlsCaCert string) (http.RoundTripper, error) {
+func makeTransport(server, gun, tlsCaCert, timeout string) (http.RoundTripper, error) {
 	modifiers := []transport.RequestModifier{
 		transport.NewHeaderRequestModifier(http.Header{
 			"User-Agent": []string{"signy"},
@@ -63,10 +63,15 @@ func makeTransport(server, gun, tlsCaCert string) (http.RoundTripper, error) {
 		}
 	}
 
+	t, err := time.ParseDuration(timeout)
+	if err != nil {
+		return nil, err
+	}
+
 	authTransport := transport.NewTransport(base, modifiers...)
 	pingClient := &http.Client{
 		Transport: authTransport,
-		Timeout:   5 * time.Second,
+		Timeout:   t * time.Second,
 	}
 	req, err := http.NewRequest("GET", server+"/v2/", nil)
 	if err != nil {

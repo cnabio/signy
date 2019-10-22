@@ -12,14 +12,14 @@ import (
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey string, custom *canonicaljson.RawMessage) (*client.Target, error) {
+func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeout string, custom *canonicaljson.RawMessage) (*client.Target, error) {
 	if err := ensureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
 	gun, name := cnab.SplitTargetRef(ref)
 
-	transport, err := makeTransport(trustServer, gun, tlscacert)
+	transport, err := makeTransport(trustServer, gun, tlscacert, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot make transport: %v", err)
 	}

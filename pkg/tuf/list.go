@@ -10,8 +10,8 @@ import (
 )
 
 // PrintTargets prints all the targets for a specific GUN from a trust server
-func PrintTargets(gun, trustServer, tlscacert, trustDir string) error {
-	targets, err := GetTargets(gun, trustServer, tlscacert, trustDir)
+func PrintTargets(gun, trustServer, tlscacert, trustDir, timeout string) error {
+	targets, err := GetTargets(gun, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return fmt.Errorf("cannot list targets:%v", err)
 	}
@@ -23,8 +23,8 @@ func PrintTargets(gun, trustServer, tlscacert, trustDir string) error {
 }
 
 // GetTargetWithRole returns a single target by name from the trusted collection
-func GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir string) (*client.TargetWithRole, error) {
-	targets, err := GetTargets(gun, trustServer, tlscacert, trustDir)
+func GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir, timeout string) (*client.TargetWithRole, error) {
+	targets, err := GetTargets(gun, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list targets:%v", err)
 	}
@@ -39,12 +39,12 @@ func GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir string) (*cli
 }
 
 // GetTargets returns all targets for a given gun from the trusted collection
-func GetTargets(gun, trustServer, tlscacert, trustDir string) ([]*client.TargetWithRole, error) {
+func GetTargets(gun, trustServer, tlscacert, trustDir, timeout string) ([]*client.TargetWithRole, error) {
 	if err := ensureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
-	transport, err := makeTransport(trustServer, gun, tlscacert)
+	transport, err := makeTransport(trustServer, gun, tlscacert, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot make transport: %v", err)
 	}

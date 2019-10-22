@@ -14,8 +14,8 @@ import (
 )
 
 // VerifyCNABTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle
-func VerifyCNABTrust(ref, trustServer, tlscacert, trustDir string) error {
-	target, trustedSHA, err := GetTargetAndSHA(ref, trustServer, tlscacert, trustDir)
+func VerifyCNABTrust(ref, trustServer, tlscacert, trustDir, timeout string) error {
+	target, trustedSHA, err := GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return err
 	}
@@ -40,8 +40,8 @@ func VerifyCNABTrust(ref, trustServer, tlscacert, trustDir string) error {
 }
 
 // VerifyFileTrust ensures the trust metadata for a given GUN matches the computed metadata of the local file
-func VerifyFileTrust(ref, localFile, trustServer, tlscacert, trustDir string) error {
-	target, trustedSHA, err := GetTargetAndSHA(ref, trustServer, tlscacert, trustDir)
+func VerifyFileTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout string) error {
+	target, trustedSHA, err := GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return err
 	}
@@ -75,9 +75,9 @@ func verifyTargetSHAFromBytes(target *client.TargetWithRole, buf []byte) error {
 }
 
 // GetTargetAndSHA returns the target with roles and the SHA256 of the target file
-func GetTargetAndSHA(ref, trustServer, tlscacert, trustDir string) (*client.TargetWithRole, string, error) {
+func GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout string) (*client.TargetWithRole, string, error) {
 	gun, name := cnab.SplitTargetRef(ref)
-	target, err := GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir)
+	target, err := GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return nil, "", err
 	}
