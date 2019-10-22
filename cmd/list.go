@@ -40,5 +40,5 @@ $ signy list docker.io/library/alpine
 }
 
 func (l *listCmd) run() error {
-	return tuf.PrintTargets(l.gun, trustServer, tlscacert, trustDir)
+	return tuf.PrintTargets(l.gun, trustServer, tlscacert, trustDir, timeout)
 }

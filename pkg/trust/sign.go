@@ -11,7 +11,7 @@ import (
 )
 
 // SignAndPublish takes a CNAB bundle, pushes the signature and metadata to a trust server, then pushes the bundle
-func SignAndPublish(ref, layout, linkDir, layoutKey, trustDir, trustServer, file, tlscacert string) error {
+func SignAndPublish(ref, layout, linkDir, layoutKey, trustDir, trustServer, file, tlscacert, timeout string) error {
 	err := intoto.ValidateFromPath(layout)
 	if err != nil {
 		return fmt.Errorf("validation for in-toto metadata failed: %v", err)
@@ -23,7 +23,7 @@ func SignAndPublish(ref, layout, linkDir, layoutKey, trustDir, trustServer, file
 
 	log.Infof("Adding In-Toto layout and links metadata to TUF")
 
-	target, err := tuf.SignAndPublish(trustDir, trustServer, ref, file, tlscacert, "", &r)
+	target, err := tuf.SignAndPublish(trustDir, trustServer, ref, file, tlscacert, "", timeout, &r)
 	if err != nil {
 		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}

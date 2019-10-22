@@ -88,15 +88,15 @@ func (v *verifyCmd) run() error {
 			return fmt.Errorf("no local file provided for thick bundle verification")
 		}
 		if v.intoto {
-			return trust.ValidateThickBundle(v.ref, v.localFile, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, v.targetFiles, v.keepTempDir)
+			return trust.ValidateThickBundle(v.ref, v.localFile, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, timeout, v.targetFiles, v.keepTempDir)
 		}
 
-		return tuf.VerifyFileTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir)
+		return tuf.VerifyFileTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
 	}
 
 	if v.intoto {
-		return trust.ValidateThinBundle(v.ref, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, v.targetFiles, v.keepTempDir)
+		return trust.ValidateThinBundle(v.ref, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, timeout, v.targetFiles, v.keepTempDir)
 	}
 
-	return tuf.VerifyCNABTrust(v.ref, trustServer, tlscacert, trustDir)
+	return tuf.VerifyCNABTrust(v.ref, trustServer, tlscacert, trustDir, timeout)
 }
