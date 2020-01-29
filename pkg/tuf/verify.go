@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary/client"
 
-	"github.com/engineerd/signy/pkg/cnab"
+	"github.com/cnabio/signy/pkg/cnab"
 )
 
 // VerifyCNABTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle

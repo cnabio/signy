@@ -8,9 +8,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/engineerd/signy/pkg/docker"
-	"github.com/engineerd/signy/pkg/intoto"
-	"github.com/engineerd/signy/pkg/tuf"
+	"github.com/cnabio/signy/pkg/docker"
+	"github.com/cnabio/signy/pkg/intoto"
+	"github.com/cnabio/signy/pkg/tuf"
 )
 
 // ValidateThinBundle runs the TUF and in-toto validations for a CNAB bundle in thin format (canonical JSON form)

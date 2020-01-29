@@ -8,9 +8,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/engineerd/signy/pkg/cnab"
-	"github.com/engineerd/signy/pkg/intoto"
-	"github.com/engineerd/signy/pkg/tuf"
+	"github.com/cnabio/signy/pkg/cnab"
+	"github.com/cnabio/signy/pkg/intoto"
+	"github.com/cnabio/signy/pkg/tuf"
 )
 
 type signCmd struct {

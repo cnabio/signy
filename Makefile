@@ -1,5 +1,5 @@
 PROJECT         := signy
-ORG             := engineerd
+ORG             := cnabio
 BINDIR          := $(CURDIR)/bin
 GOFLAGS         :=
 GOBUILDTAGS     := osusergo
