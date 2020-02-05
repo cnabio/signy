@@ -90,12 +90,12 @@ func makeTransport(server, gun, tlsCaCert, timeout string) (http.RoundTripper, e
 
 	defaultAuth, err := getAuth(server)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get default credentials: %v", err)
+		log.Debug(fmt.Errorf("cannot get default credentials: %v", err))
+	} else {
+		creds := simpleCredentialStore{auth: defaultAuth}
+		tokenHandler := auth.NewTokenHandler(base, creds, gun, "push", "pull")
+		modifiers = append(modifiers, auth.NewAuthorizer(challengeManager, tokenHandler))
 	}
-
-	creds := simpleCredentialStore{auth: defaultAuth}
-	tokenHandler := auth.NewTokenHandler(base, creds, gun, "push", "pull")
-	modifiers = append(modifiers, auth.NewAuthorizer(challengeManager, tokenHandler))
 
 	return transport.NewTransport(base, modifiers...), nil
 }
