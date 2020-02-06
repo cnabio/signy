@@ -19,6 +19,10 @@ endif
 build:
 	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags '$(LDFLAGS)' -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
 
+.PHONY: install
+install: build
+	mv $(BINDIR)/$(TARGET) $(GOPATH)/bin
+
 .PHONY: test
 test:
 	go test $(TESTFLAGS) ./...
