@@ -109,16 +109,21 @@ func (s *signCmd) run() error {
 		cm = &custom
 	}
 
+	// NOTE: We first push to the Registry, and then Notary. This is so that if we modify the bundle locally,
+	// we will not invalidate its signature by first pushing to Notary, and then the Registry.
+
+	// We push only thin bundles to the Registry.
+	if !s.thick {
+		if err := cnab.Push(s.file, s.ref); err != nil {
+			return err
+		}
+	}
+
 	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, timeout, cm)
 	if err != nil {
 		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
 
 	log.Infof("Pushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
-
-	if s.thick {
-		return nil
-	}
-
-	return cnab.Push(s.file, s.ref)
+	return nil
 }
