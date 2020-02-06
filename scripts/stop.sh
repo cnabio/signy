@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NOTARY=~/go/src/github.com/theupdateframework/notary
+NOTARY=$GOPATH/src/github.com/theupdateframework/notary
 
 (cd $NOTARY; docker-compose down)
 
