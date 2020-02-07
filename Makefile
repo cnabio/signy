@@ -35,16 +35,12 @@ GOLANGCI_VERSION := v1.16.0
 
 .PHONY: bootstrap
 bootstrap:
-ifndef HAS_DEP
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-endif
 ifndef HAS_GOLANGCI
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin $(GOLANGCI_VERSION)
 endif
 ifndef HAS_GOIMPORTS
 	go get -u golang.org/x/tools/cmd/goimports
 endif
-	dep check
 
 .PHONY: e2e
 e2e:
