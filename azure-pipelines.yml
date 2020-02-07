@@ -19,6 +19,6 @@ steps:
   displayName: 'Set up the Go workspace'
 
 - script: |
-    make bootstrap build test lint
+    GO111MODULE=on make bootstrap build test lint
   workingDirectory: '$(modulePath)'
   displayName: 'Get dependencies, build, test'

@@ -28,5 +28,4 @@ jobs:
         mv $(pwd)/* $GOPATH/src/github.com/$GITHUB_REPOSITORY
         cd $GOPATH/src/github.com/$GITHUB_REPOSITORY
 
-        make bootstrap build test lint
-
+        GO111MODULE=on make bootstrap build test lint
