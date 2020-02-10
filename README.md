@@ -17,38 +17,33 @@ It implements signing and verifying for CNAB bundles in [the canonical formats (
 
 ## Building Signy
 
-```
+```bash
 $ cd $GOPATH/src/github.com
 $ mkdir engineerd && cd engineerd && git clone https://github.com/engineerd/signy && cd signy
-$ make bootstrap build
-$ mv bin/signy $GOPATH/bin
+# This will build and install an updated version of the Signy binary in $GOPATH/bin whenever the source changes in $GOPATH/src/github.com/engineerd/signy.
+./scripts/live-reload.sh
 ```
 
 ## Using Signy
 
-- Docker Hub (https://index.docker.io) and Docker Notary (https://notary.docker.io) can be used to push bundles and trust metadata, but current recommended way to test Signy is to run a registry and trust server locally.
+### Setting up
 
-- running Docker Distribution:
+- Run local Docker Distribution and Notary services:
 
-```
-$ docker run -it -d -p 5000:5000 registry
-```
-
-- running Notary:
-
-```
-$ cd $GOPATH/src/github.com && mkdir theupdateframework && cd theupdateframework && git clone https://github.com/theupdateframework/notary && cd notary && docker-compose up -d
-$ export NOTARY_CA=$GOPATH/src/github.com/theupdateframework/notary/cmd/notary/root-ca.crt
+```bash
+# Setup Docker Distribution and Notary.
+$ ./scripts/bootstrap.sh
+# Start Docker Distribution and Notary.
+$ ./scripts/signy-start.sh
 ```
 
-On the first push to a repository, Signy generates the signing keys (using Notary).
-To avoid introducing the passphrases every time, set the following environment variables with the corresponding passphrases:
+- Before running Signy, test pushing and pulling from local registry and Notary server:
 
-```
-$ export SIGNY_ROOT_PASSPHRASE=PassPhrase#123
-$ export SIGNY_TARGETS_PASSPHRASE=PassPhrase#123
-$ export SIGNY_SNAPSHOT_PASSPHRASE=PassPhrase#123
-$ export SIGNY_DELEGATION_PASSPHRASE=PassPhrase#123
+```bash
+# Push a signed hello-world image.
+$ ./scripts/docker-push.sh
+# Pull the signed hello-world image.
+$ ./scripts/docker-pull.sh
 ```
 
 At this point, Signy can be used by passing the Notary CA and URL to the trust server:
@@ -57,33 +52,20 @@ At this point, Signy can be used by passing the Notary CA and URL to the trust s
 $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443
 ```
 
-### Operations:
+### Common operations
 
-- listing the targets for a trusted collection:
+- Computing the SHA256 digest of a canonical CNAB bundle, pushing it to the trust server, then pushing the bundle using `cnab-to-oci`:
 
-```
-$ signy list docker.io/library/alpine
-
-3.5     66952b313e51c3bd1987d7c4ddf5dba9bc0fb6e524eed2448fa660246b3e76ec
-3.8     04696b491e0cc3c58a75bace8941c14c924b9f313b03ce5029ebbc040ed9dcd9
-3.2     e9a2035f9d0d7cee1cdd445f5bfa0c5c646455ee26f14565dce23cf2d2de7570
-3.6     66790a2b79e1ea3e1dabac43990c54aca5d1ddf268d9a5a0285e4167c8b24475
-3.10    6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
-3.9.4   7746df395af22f04212cd25a92c1d6dbc5a06a0ca9579a229ef43008d4d1302a
-```
-
-- computing the SHA256 digest of a canonical CNAB bundle, pushing it to the trust server, then pushing the bundle using `cnab-to-oci`:
-
-```
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-bundle:v1
-INFO[0000] Pushed trust data for localhost:5000/thin-bundle:v1: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
+```bash
+$ ./scripts/signy-sign.sh
 INFO[0000] Starting to copy image cnab/helloworld:0.1.1
-INFO[0002] Completed image cnab/helloworld:0.1.1 copy
-INFO[0002] Generated relocation map: relocation.ImageRelocationMap{"cnab/helloworld:0.1.1":"localhost:5000/thin-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
-INFO[0002] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9ea1f979129e09a021a8f40abc07f736de9268"
+INFO[0000] Completed image cnab/helloworld:0.1.1 copy
+INFO[0000] Generated relocation map: relocation.ImageRelocationMap{"cnab/helloworld:0.1.1":"localhost:5000/cnab/thin-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
+INFO[0000] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9ea1f979129e09a021a8f40abc07f736de9268"
+INFO[0000] Pushed trust data for localhost:5000/cnab/thin-bundle:v1: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 ```
 
-- verifying the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry
+- Verifying the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry
 
 ```
 $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:5000/thin-bundle:v1
@@ -93,14 +75,22 @@ INFO[0000] Computed SHA: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08eda
 INFO[0000] The SHA sums are equal: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 ```
 
-- computing the SHA256 digest of a thick bundle, then pushing it to a trust sever
+- Listing the targets for a trusted collection:
+
+```bash
+$ ./scripts/signy-list.sh
+0.1.1	d9dfd104723ea5b037000931a876e98e5e0bf492d665436d123d0dfc7c40c8e8
+```
+
+
+- Computing the SHA256 digest of a thick bundle, then pushing it to a trust sever
 
 ```
 $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign --thick testdata/cnab/helloworld-0.1.1.tgz localhost:5000/thick-bundle:v1
 INFO[0000] Pushed trust data for localhost:5000/thick-bundle:v1: 540cc4dc213548ebbdffb2ab0ef58729e089d1887edbcde6eeca851de624da70
 ```
 
-- verifying the metadata for a local thick bundle
+- Verifying the metadata for a local thick bundle
 
 ```
 $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify --thick --local testdata/cnab/helloworld-0.1.1.tgz localhost:5000/thick-bundle:v1
@@ -109,9 +99,9 @@ INFO[0000] Computed SHA: 540cc4dc213548ebbdffb2ab0ef58729e089d1887edbcde6eeca851
 INFO[0000] The SHA sums are equal: 540cc4dc213548ebbdffb2ab0ef58729e089d1887edbcde6eeca851de624da70
 ```
 
-### Using In-Toto
+### Using in-toto
 
-- add in-toto metadata when signing a thin bundle:
+- Add in-toto metadata when signing a thin bundle:
 
 ```
 $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/demo.layout.template --links testdata/intoto --layout-key testdata/intoto/alice.pub
@@ -191,6 +181,25 @@ Notes:
 
 - see current limitations about the in-toto signing key of the root layout
 - the `--target` currently passed is because the in-toto verification used as example needs to validate that file. In a real scenario, the verification would perform operations on the CNAB bundle. (Help needed to create a real-world in-toto layout)
+
+### Tearing down
+
+- Stop all services:
+
+```bash
+./scripts/stop.sh
+```
+
+### Tips
+
+On the first push to a repository, Signy generates the signing keys (using Notary). To avoid introducing the passphrases every time, set the following environment variables with the corresponding passphrases:
+
+```
+$ export SIGNY_ROOT_PASSPHRASE=PassPhrase#123
+$ export SIGNY_TARGETS_PASSPHRASE=PassPhrase#123
+$ export SIGNY_SNAPSHOT_PASSPHRASE=PassPhrase#123
+$ export SIGNY_DELEGATION_PASSPHRASE=PassPhrase#123
+```
 
 ## Contributing
 
