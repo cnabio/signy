@@ -34,7 +34,7 @@ $ mkdir engineerd && cd engineerd && git clone https://github.com/engineerd/sign
 # Setup Docker Distribution and Notary.
 $ ./scripts/bootstrap.sh
 # Start Docker Distribution and Notary.
-$ ./scripts/start.sh
+$ ./scripts/signy-start.sh
 ```
 
 - Test pushing and pulling from local registry and Notary server:
