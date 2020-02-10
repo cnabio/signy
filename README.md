@@ -37,22 +37,13 @@ $ ./scripts/bootstrap.sh
 $ ./scripts/signy-start.sh
 ```
 
-- Test pushing and pulling from local registry and Notary server:
+- Before running Signy, test pushing and pulling from local registry and Notary server:
 
 ```bash
 # Push a signed hello-world image.
-$ ./scripts/push.sh
+$ ./scripts/docker-push.sh
 # Pull the signed hello-world image.
-$ ./scripts/pull.sh
-```
-
-On the first push to a repository, Signy generates the signing keys (using Notary). To avoid introducing the passphrases every time, set the following environment variables with the corresponding passphrases:
-
-```
-$ export SIGNY_ROOT_PASSPHRASE=PassPhrase#123
-$ export SIGNY_TARGETS_PASSPHRASE=PassPhrase#123
-$ export SIGNY_SNAPSHOT_PASSPHRASE=PassPhrase#123
-$ export SIGNY_DELEGATION_PASSPHRASE=PassPhrase#123
+$ ./scripts/docker-pull.sh
 ```
 
 At this point, Signy can be used by passing the Notary CA and URL to the trust server:
@@ -63,28 +54,15 @@ $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443
 
 ### Common operations
 
-- Listing the targets for a trusted collection:
-
-```
-$ signy list docker.io/library/alpine
-
-3.5     66952b313e51c3bd1987d7c4ddf5dba9bc0fb6e524eed2448fa660246b3e76ec
-3.8     04696b491e0cc3c58a75bace8941c14c924b9f313b03ce5029ebbc040ed9dcd9
-3.2     e9a2035f9d0d7cee1cdd445f5bfa0c5c646455ee26f14565dce23cf2d2de7570
-3.6     66790a2b79e1ea3e1dabac43990c54aca5d1ddf268d9a5a0285e4167c8b24475
-3.10    6a92cd1fcdc8d8cdec60f33dda4db2cb1fcdcacf3410a8e05b3741f44a9b5998
-3.9.4   7746df395af22f04212cd25a92c1d6dbc5a06a0ca9579a229ef43008d4d1302a
-```
-
 - Computing the SHA256 digest of a canonical CNAB bundle, pushing it to the trust server, then pushing the bundle using `cnab-to-oci`:
 
-```
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-bundle:v1
-INFO[0000] Pushed trust data for localhost:5000/thin-bundle:v1: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
+```bash
+$ ./scripts/signy-sign.sh
 INFO[0000] Starting to copy image cnab/helloworld:0.1.1
-INFO[0002] Completed image cnab/helloworld:0.1.1 copy
-INFO[0002] Generated relocation map: relocation.ImageRelocationMap{"cnab/helloworld:0.1.1":"localhost:5000/thin-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
-INFO[0002] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9ea1f979129e09a021a8f40abc07f736de9268"
+INFO[0000] Completed image cnab/helloworld:0.1.1 copy
+INFO[0000] Generated relocation map: relocation.ImageRelocationMap{"cnab/helloworld:0.1.1":"localhost:5000/cnab/thin-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
+INFO[0000] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9ea1f979129e09a021a8f40abc07f736de9268"
+INFO[0000] Pushed trust data for localhost:5000/cnab/thin-bundle:v1: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 ```
 
 - Verifying the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry
@@ -96,6 +74,14 @@ INFO[0000] Pulling bundle from registry: localhost:5000/thin-bundle:v1
 INFO[0000] Computed SHA: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] The SHA sums are equal: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 ```
+
+- Listing the targets for a trusted collection:
+
+```bash
+$ ./scripts/signy-list.sh
+0.1.1	d9dfd104723ea5b037000931a876e98e5e0bf492d665436d123d0dfc7c40c8e8
+```
+
 
 - Computing the SHA256 digest of a thick bundle, then pushing it to a trust sever
 
@@ -202,6 +188,17 @@ Notes:
 
 ```bash
 ./scripts/stop.sh
+```
+
+### Tips
+
+On the first push to a repository, Signy generates the signing keys (using Notary). To avoid introducing the passphrases every time, set the following environment variables with the corresponding passphrases:
+
+```
+$ export SIGNY_ROOT_PASSPHRASE=PassPhrase#123
+$ export SIGNY_TARGETS_PASSPHRASE=PassPhrase#123
+$ export SIGNY_SNAPSHOT_PASSPHRASE=PassPhrase#123
+$ export SIGNY_DELEGATION_PASSPHRASE=PassPhrase#123
 ```
 
 ## Contributing

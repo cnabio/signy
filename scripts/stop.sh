@@ -6,5 +6,6 @@ NOTARY=$GOPATH/src/github.com/theupdateframework/notary
 
 docker stop registry
 docker rm registry
+rm -rf ~/.signy
 rm -rf ~/.docker/trust/tuf/localhost:5000
 docker ps
