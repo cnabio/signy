@@ -1,6 +1,7 @@
 #!/bin/bash
 
 brew install fswatch
+make install
 
 # https://emcrisostomo.github.io/fswatch/doc/1.14.0/fswatch.html/Tutorial-Introduction-to-fswatch.html#Detecting-File-System-Changes
 # NOTE: We exclude bin/* to avoid infinite loop.

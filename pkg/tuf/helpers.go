@@ -118,6 +118,7 @@ func clearChangeList(notaryRepo client.Repository) error {
 
 // importRootKey imports the root key from path then adds the key to repo
 // returns key ids
+// https://github.com/theupdateframework/notary/blob/f255ae779066dc28ae4aee196061e58bb38a2b49/cmd/notary/tuf.go#L413
 func importRootKey(rootKey string, nRepo client.Repository, retriever notary.PassRetriever) ([]string, error) {
 	var rootKeyList []string
 
@@ -140,42 +141,13 @@ func importRootKey(rootKey string, nRepo client.Repository, retriever notary.Pas
 		// Chooses the first root key available, which is initialization specific
 		// but should return the HW one first.
 		rootKeyID := rootKeyList[0]
-		log.Infof("Root key found, using: %s\n", rootKeyID)
+		log.Infof("SIGNY: Root key found, using: %s\n", rootKeyID)
 
 		return []string{rootKeyID}, nil
 	}
 
 	return []string{}, nil
 }
-
-// // importRootCert imports the base64 encoded public certificate corresponding to the root key
-// // returns empty slice if path is empty
-// func importRootCert(certFilePath string) ([]data.PublicKey, error) {
-// 	publicKeys := make([]data.PublicKey, 0, 1)
-
-// 	if certFilePath == "" {
-// 		return publicKeys, nil
-// 	}
-
-// 	// read certificate from file
-// 	certPEM, err := ioutil.ReadFile(certFilePath)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("error reading certificate file: %v", err)
-// 	}
-// 	block, _ := pem.Decode([]byte(certPEM))
-// 	if block == nil {
-// 		return nil, fmt.Errorf("the provided file does not contain a valid PEM certificate %v", err)
-// 	}
-
-// 	// convert the file to data.PublicKey
-// 	cert, err := x509.ParseCertificate(block.Bytes)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("Parsing certificate PEM bytes to x509 certificate: %v", err)
-// 	}
-// 	publicKeys = append(publicKeys, utils.CertToKey(cert))
-
-// 	return publicKeys, nil
-// }
 
 // Attempt to read a role key from a file, and return it as a data.PrivateKey
 // If key is for the Root role, it must be encrypted
@@ -209,7 +181,6 @@ func getPassphraseRetriever() notary.PassRetriever {
 	env := map[string]string{
 		"root":       os.Getenv("SIGNY_ROOT_PASSPHRASE"),
 		"targets":    os.Getenv("SIGNY_TARGETS_PASSPHRASE"),
-		"snapshot":   os.Getenv("SIGNY_SNAPSHOT_PASSPHRASE"),
 		"delegation": os.Getenv("SIGNY_DELEGATION_PASSPHRASE"),
 	}
 
