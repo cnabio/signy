@@ -141,7 +141,7 @@ func importRootKey(rootKey string, nRepo client.Repository, retriever notary.Pas
 		// Chooses the first root key available, which is initialization specific
 		// but should return the HW one first.
 		rootKeyID := rootKeyList[0]
-		log.Infof("SIGNY: Root key found, using: %s\n", rootKeyID)
+		log.Debugf("Signy found root key, using: %s\n", rootKeyID)
 
 		return []string{rootKeyID}, nil
 	}
@@ -174,6 +174,65 @@ func readKey(role data.RoleName, keyFilename string, retriever notary.PassRetrie
 	}
 
 	return privKey, nil
+}
+
+// Try to reuse a single targets key across repositories.
+// FIXME: Unfortunately, short of forking Notary or sending a PR upstream, there isn't an easy way to prevent it
+// from automagically creating a new, local targets key per TUF metadata repository. We fix this here by undoing
+// more than one new, local targets key, and reusing any existing local targets key, just like the way Notary
+// reuses the root key.
+func reuseTargetsKey(r client.Repository) error {
+	var (
+		err                                error
+		thisTargetsKeyID, thatTargetsKeyID string
+	)
+
+	// Get all known targets keys.
+	targetsKeyList := r.GetCryptoService().ListKeys(data.CanonicalTargetsRole)
+	// Try to extract a single targets key we can reuse.
+	switch len(targetsKeyList) {
+	case 0:
+		err = fmt.Errorf("No targets key despite having initialized a repo!")
+	case 1:
+		log.Debug("Nothing to do, only one targets key available")
+	case 2:
+		// Get the current top-level roles.
+		roleWithSigs, listRolesErr := r.ListRoles()
+		if listRolesErr != nil {
+			err = listRolesErr
+			break
+		}
+
+		// Get the current targets key.
+		// NOTE: We do not delete it, in case the user wants to keep it.
+		for _, roleWithSig := range roleWithSigs {
+			role := roleWithSig.Role
+			if role.Name == data.CanonicalTargetsRole {
+				if len(role.KeyIDs) == 1 {
+					thisTargetsKeyID = role.KeyIDs[0]
+					log.Debugf("This targets keyid: %s", thisTargetsKeyID)
+				} else {
+					return fmt.Errorf("This targets role has more than 1 key!")
+				}
+			}
+		}
+
+		// Get and reuse the other targets key.
+		for _, keyID := range targetsKeyList {
+			if keyID != thisTargetsKeyID {
+				thatTargetsKeyID = keyID
+				log.Debugf("That targets keyID: %s", thatTargetsKeyID)
+				break
+			}
+			log.Debugf("Before rotating targets key from %s to %s", thisTargetsKeyID, thatTargetsKeyID)
+			err = r.RotateKey(data.CanonicalTargetsRole, false, []string{thatTargetsKeyID})
+			log.Debugf("After targets key rotation")
+		}
+	default:
+		err = fmt.Errorf("There are more than 2 targets keys!")
+	}
+
+	return err
 }
 
 func getPassphraseRetriever() notary.PassRetriever {
