@@ -2,6 +2,7 @@
 
 Signy is an experimental tool that implements the CNAB Security specification. It implements signing and verifying for CNAB bundles in [the canonical formats (thin and thick bundles)](https://github.com/deislabs/cnab-spec/blob/master/104-bundle-formats.md).
 
+
 ## Notes
 
 - the CNAB security specification uses TUF as a protocol for distributing trust metadata about bundles. This implementation uses Notary, a Go implementation of the TUF specification.
