@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/engineerd/signy/pkg/tuf"
+	"github.com/cnabio/signy/pkg/tuf"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

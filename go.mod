@@ -1,4 +1,4 @@
-module github.com/engineerd/signy
+module github.com/cnabio/signy
 
 go 1.12
 

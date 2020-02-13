@@ -1,5 +1,5 @@
 PROJECT         := signy
-ORG             := engineerd
+ORG             := cnabio
 BINDIR          := $(CURDIR)/bin
 GOFLAGS         :=
 GOBUILDTAGS     := osusergo
@@ -31,7 +31,6 @@ test:
 lint:
 	golangci-lint run --config ./golangci.yml
 
-HAS_DEP          := $(shell $(CHECK) dep)
 HAS_GOLANGCI     := $(shell $(CHECK) golangci-lint)
 HAS_GOIMPORTS    := $(shell $(CHECK) goimports)
 GOLANGCI_VERSION := v1.16.0

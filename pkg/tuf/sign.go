@@ -8,7 +8,7 @@ import (
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
 
-	"github.com/engineerd/signy/pkg/cnab"
+	"github.com/cnabio/signy/pkg/cnab"
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
