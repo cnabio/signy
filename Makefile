@@ -31,7 +31,6 @@ test:
 lint:
 	golangci-lint run --config ./golangci.yml
 
-HAS_DEP          := $(shell $(CHECK) dep)
 HAS_GOLANGCI     := $(shell $(CHECK) golangci-lint)
 HAS_GOIMPORTS    := $(shell $(CHECK) goimports)
 GOLANGCI_VERSION := v1.16.0

@@ -18,4 +18,6 @@ jobs:
 
     - name: Build, Test, Lint
       run: |
+        export GOPATH=$HOME/go && export GOBIN=$(go env GOPATH)/bin && export PATH=$PATH:$GOPATH&& export PATH=$PATH:$GOBIN && mkdir -p $GOBIN
+
         GO111MODULE=on make bootstrap build test lint
