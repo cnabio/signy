@@ -54,7 +54,7 @@ $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443
 - Computing the SHA256 digest of a canonical CNAB bundle, pushing it to the trust server, then pushing the bundle using `cnab-to-oci`:
 
 ```bash
-$ ./scripts/signy-sign.sh
+$ ./scripts/signy-sign.sh testdata/cnab/bundle.json localhost:5000/cnab/thin-bundle:v1
 INFO[0000] Starting to copy image cnab/helloworld:0.1.1
 INFO[0000] Completed image cnab/helloworld:0.1.1 copy
 INFO[0000] Generated relocation map: relocation.ImageRelocationMap{"cnab/helloworld:0.1.1":"localhost:5000/cnab/thin-bundle@sha256:a59a4e74d9cc89e4e75dfb2cc7ea5c108e4236ba6231b53081a9e2506d1197b6"}
@@ -65,7 +65,7 @@ INFO[0000] Pushed trust data for localhost:5000/cnab/thin-bundle:v1: c7e92bd51f0
 - Verifying the metadata in the trusted collection for a CNAB bundle against the bundle pushed to an OCI registry
 
 ```
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:5000/thin-bundle:v1
+$ ./scripts/signy-verify.sh localhost:5000/cnab/thin-bundle:v1
 INFO[0000] Pulled trust data for localhost:5000/thin-bundle:v1, with role targets - SHA256: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] Pulling bundle from registry: localhost:5000/thin-bundle:v1
 INFO[0000] Computed SHA: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
@@ -194,8 +194,7 @@ On the first push to a repository, Signy generates the signing keys (using Notar
 ```
 $ export SIGNY_ROOT_PASSPHRASE=PassPhrase#123
 $ export SIGNY_TARGETS_PASSPHRASE=PassPhrase#123
-$ export SIGNY_SNAPSHOT_PASSPHRASE=PassPhrase#123
-$ export SIGNY_DELEGATION_PASSPHRASE=PassPhrase#123
+$ export SIGNY_RELEASES_PASSPHRASE=PassPhrase#123
 ```
 
 ## Contributing

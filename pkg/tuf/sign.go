@@ -9,9 +9,18 @@ import (
 	"github.com/theupdateframework/notary/tuf/data"
 )
 
+// clearChangelist clears the notary staging changelist
+func clearChangeList(notaryRepo client.Repository) error {
+	cl, err := notaryRepo.GetChangelist()
+	if err != nil {
+		return err
+	}
+	return cl.Clear("")
+}
+
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
 func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeout string, custom *canonicaljson.RawMessage) (*client.Target, error) {
-	if err := ensureTrustDir(trustDir); err != nil {
+	if err := EnsureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
@@ -62,7 +71,7 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 
 			// Reuse targets key.
 			if err = reuseTargetsKey(repo); err != nil {
-				return nil, fmt.Errorf("cannot reuse targets keys %v", err)
+				return nil, fmt.Errorf("cannot reuse targets keys: %v", err)
 			}
 
 		default:
