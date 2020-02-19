@@ -33,7 +33,7 @@ lint:
 
 HAS_GOLANGCI     := $(shell $(CHECK) golangci-lint)
 HAS_GOIMPORTS    := $(shell $(CHECK) goimports)
-GOLANGCI_VERSION := v1.16.0
+GOLANGCI_VERSION := v1.23.6
 
 
 .PHONY: bootstrap
