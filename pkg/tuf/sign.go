@@ -15,7 +15,6 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
-	// gun, name := cnab.SplitTargetRef(ref)
 	repoInfo, tag, err := getRepoAndTag(ref)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get repo and tag from reference: %v", err)
