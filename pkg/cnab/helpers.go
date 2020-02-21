@@ -2,7 +2,6 @@ package cnab
 
 import (
 	"os"
-	"strings"
 
 	containerdRemotes "github.com/containerd/containerd/remotes"
 	"github.com/docker/cli/cli/config"
@@ -25,17 +24,4 @@ func displayEvent(ev remotes.FixupEvent) {
 			log.Infof("Completed image %s copy", ev.SourceImage)
 		}
 	}
-}
-
-// SplitTargetRef takes a target reference and returns a GUN and tag
-// TODO - Radu M
-//
-// Should we error if the tag is not present, instead of returning latest?
-func SplitTargetRef(ref string) (string, string) {
-	parts := strings.Split(ref, ":")
-	if len(parts) == 1 {
-		parts = append(parts, "latest")
-	}
-
-	return parts[0], parts[1]
 }

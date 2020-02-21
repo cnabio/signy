@@ -3,7 +3,7 @@ ORG             := cnabio
 BINDIR          := $(CURDIR)/bin
 GOFLAGS         :=
 GOBUILDTAGS     := osusergo
-LDFLAGS         := -w -s
+LDFLAGS         :=
 
 ifeq ($(OS),Windows_NT)
 	TARGET = $(PROJECT).exe
