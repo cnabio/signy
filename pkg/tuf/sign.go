@@ -7,8 +7,6 @@ import (
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
-
-	"github.com/cnabio/signy/pkg/cnab"
 )
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
@@ -17,16 +15,19 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
-	gun, name := cnab.SplitTargetRef(ref)
+	repoInfo, tag, err := getRepoAndTag(ref)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get repo and tag from reference: %v", err)
+	}
 
-	transport, err := makeTransport(trustServer, gun, tlscacert, timeout)
+	transport, err := makeTransport(trustServer, repoInfo.Name.Name(), tlscacert, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot make transport: %v", err)
 	}
 
 	repo, err := client.NewFileCachedRepository(
 		trustDir,
-		data.GUN(gun),
+		data.GUN(repoInfo.Name.Name()),
 		trustServer,
 		transport,
 		getPassphraseRetriever(),
@@ -60,7 +61,7 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 		}
 	}
 
-	target, err := client.NewTarget(name, file, custom)
+	target, err := client.NewTarget(tag, file, custom)
 	if err != nil {
 		return nil, err
 	}

@@ -20,9 +20,11 @@ import (
 
 	"github.com/docker/cli/cli/config"
 	configtypes "github.com/docker/cli/cli/config/types"
+	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/client/auth"
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/docker/distribution/registry/client/transport"
+	"github.com/docker/docker/registry"
 	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
@@ -246,6 +248,30 @@ func getAuth(server string) (configtypes.AuthConfig, error) {
 	}
 
 	return auth, nil
+}
+
+func getRepoAndTag(name string) (*registry.RepositoryInfo, string, error) {
+	r, err := reference.ParseNormalizedNamed(name)
+	if err != nil {
+		return nil, "", err
+	}
+	repo, err := registry.ParseRepositoryInfo(r)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return repo, getTag(r), nil
+}
+
+func getTag(ref reference.Named) string {
+	switch x := ref.(type) {
+	case reference.Canonical, reference.Digested:
+		return ""
+	case reference.NamedTagged:
+		return x.Tag()
+	default:
+		return ""
+	}
 }
 
 func defaultCfgDir() string {

@@ -76,8 +76,12 @@ func verifyTargetSHAFromBytes(target *client.TargetWithRole, buf []byte) error {
 
 // GetTargetAndSHA returns the target with roles and the SHA256 of the target file
 func GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout string) (*client.TargetWithRole, string, error) {
-	gun, name := cnab.SplitTargetRef(ref)
-	target, err := GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir, timeout)
+	repoInfo, tag, err := getRepoAndTag(ref)
+	if err != nil {
+		return nil, "", fmt.Errorf("cannot get repo and tag from reference: %v", err)
+	}
+
+	target, err := GetTargetWithRole(repoInfo.Name.Name(), tag, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return nil, "", err
 	}
