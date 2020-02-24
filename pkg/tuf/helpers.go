@@ -241,7 +241,7 @@ func getAuth(server string) (configtypes.AuthConfig, error) {
 
 	auth, ok := cfg.AuthConfigs[s.Hostname()]
 	if !ok {
-		if s.Hostname() == DockerNotaryServer {
+		if s.String() == DockerNotaryServer {
 			return cfg.AuthConfigs[defaultIndexServer], nil
 		}
 		return configtypes.AuthConfig{}, fmt.Errorf("authentication not found for trust server %v", server)
