@@ -1,5 +1,7 @@
 #!/bin/bash 
 
+set -e -x
+
 NOTARY=$GOPATH/src/github.com/theupdateframework/notary
 
 (cd $NOTARY; docker-compose up -d)

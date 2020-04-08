@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"runtime"
 
 	"github.com/cnabio/signy/pkg/tuf"
 	log "github.com/sirupsen/logrus"
@@ -40,7 +38,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&trustServer, "server", "", tuf.DockerNotaryServer, "The trust server used")
 	rootCmd.PersistentFlags().StringVarP(&tlscacert, "tlscacert", "", "", "Trust certs signed only by this CA")
-	rootCmd.PersistentFlags().StringVarP(&trustDir, "dir", "d", defaultTrustDir(), "Directory where the trust data is persisted to")
+	rootCmd.PersistentFlags().StringVarP(&trustDir, "dir", "d", tuf.DefaultTrustDir(), "Directory where the trust data is persisted to")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "info", `Set the logging level ("debug"|"info"|"warn"|"error"|"fatal")`)
 	rootCmd.PersistentFlags().StringVarP(&timeout, "timeout", "t", "5s", `Timeout for the trust server`)
 }
@@ -50,13 +48,4 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func defaultTrustDir() string {
-	homeEnvPath := os.Getenv("HOME")
-	if homeEnvPath == "" && runtime.GOOS == "windows" {
-		homeEnvPath = os.Getenv("USERPROFILE")
-	}
-
-	return filepath.Join(homeEnvPath, ".signy")
 }

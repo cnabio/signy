@@ -40,7 +40,7 @@ func GetTargetWithRole(gun, name, trustServer, tlscacert, trustDir, timeout stri
 
 // GetTargets returns all targets for a given gun from the trusted collection
 func GetTargets(gun, trustServer, tlscacert, trustDir, timeout string) ([]*client.TargetWithRole, error) {
-	if err := ensureTrustDir(trustDir); err != nil {
+	if err := EnsureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 

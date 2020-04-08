@@ -35,8 +35,7 @@ To avoid introducing the passphrases every time, set the following environment v
 
 export SIGNY_ROOT_PASSPHRASE
 export SIGNY_TARGETS_PASSPHRASE
-export SIGNY_SNAPSHOT_PASSPHRASE
-export SIGNY_DELEGATION_PASSPHRASE
+export SIGNY_RELEASES_PASSPHRASE
 
 For more info on managing the signing keys, see https://docs.docker.com/notary/advanced_usage/
 
