@@ -3,4 +3,4 @@
 source scripts/signy-env.sh
 
 # $1: GUN
-run_signy verify $1
+run_signy verify $*

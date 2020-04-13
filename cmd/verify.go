@@ -75,7 +75,7 @@ INFO[0001] The software product passed all verification.
 	cmd.Flags().StringVarP(&verify.localFile, "local", "", "", "Local file to validate the SHA256 against (mandatory for thick bundles)")
 
 	cmd.Flags().BoolVarP(&verify.intoto, "in-toto", "", false, "If passed, will try to fetch in-toto metadata from TUF and perform the verification")
-	cmd.Flags().StringVarP(&verify.verificationImage, "image", "", "docker.pkg.github.com/cnabio/in-toto-container/verification:v1", "container image to run the in-toto verification")
+	cmd.Flags().StringVarP(&verify.verificationImage, "image", "", "github.com/cnabio/signy/in-toto-container/verification:v1", "container image to run the in-toto verification")
 	cmd.Flags().BoolVarP(&verify.keepTempDir, "keep", "", false, "if passed, the temporary directory where the in-toto metadata is pulled is not deleted")
 	cmd.Flags().StringArrayVarP(&verify.targetFiles, "target", "", nil, "target files to copy in container for in-toto verifications")
 

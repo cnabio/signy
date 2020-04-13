@@ -21,13 +21,14 @@ require (
 	github.com/docker/cnab-to-oci v0.3.0-beta4
 	github.com/docker/compose-on-kubernetes v0.4.24 // indirect
 	github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible
-	github.com/docker/docker v1.4.2-0.20181229214054-f76d6a078d88
+	github.com/docker/docker v1.4.2-0.20191021213818-bebd8206285b
 	github.com/docker/docker-credential-helpers v0.6.3
 	github.com/docker/go v1.5.1-1
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-events v0.0.0-20190806004212-e31b211e4f1c
 	github.com/docker/go-metrics v0.0.1
 	github.com/docker/go-units v0.4.0
+	github.com/engineerd/in-toto-container v0.0.0-20200225021239-288a901d4234 // indirect
 	github.com/gogo/googleapis v1.3.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.3.2
@@ -59,9 +60,9 @@ require (
 	github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2
 	github.com/theupdateframework/notary v0.6.1
 	golang.org/x/crypto v0.0.0-20191029031824-8986dd9e96cf
-	golang.org/x/net v0.0.0-20191014212845-da9a3fd4c582
+	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20190830141801-acfa387b8d69
+	golang.org/x/sys v0.0.0-20191020212454-3e7259c5e7c2
 	golang.org/x/text v0.3.2
 	google.golang.org/genproto v0.0.0-20191009194640-548a555dbc03
 	google.golang.org/grpc v1.24.0

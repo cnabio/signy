@@ -4,4 +4,4 @@ source scripts/signy-env.sh
 
 # $1: bundle.json
 # $2: GUN
-run_signy sign $1 $2
+run_signy sign $*
