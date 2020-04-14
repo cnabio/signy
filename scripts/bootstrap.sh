@@ -26,5 +26,4 @@ docker pull hello-world
 docker tag hello-world localhost:5000/hello-world
 
 echo "Listing all images..."
-docker system prune -f
 docker images
