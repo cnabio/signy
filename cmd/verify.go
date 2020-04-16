@@ -91,12 +91,12 @@ func (v *verifyCmd) run() error {
 			return trust.ValidateThickBundle(v.ref, v.localFile, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, timeout, v.targetFiles, v.keepTempDir)
 		}
 
-		return tuf.VerifyFileTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
+		return tuf.VerifyTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
 	}
 
 	if v.intoto {
 		return trust.ValidateThinBundle(v.ref, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, timeout, v.targetFiles, v.keepTempDir)
 	}
 
-	return tuf.VerifyCNABTrust(v.ref, trustServer, tlscacert, trustDir, timeout)
+	return tuf.VerifyTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
 }
