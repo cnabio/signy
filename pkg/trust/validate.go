@@ -15,7 +15,7 @@ import (
 
 // ValidateThinBundle runs the TUF and in-toto validations for a CNAB bundle in thin format (canonical JSON form)
 func ValidateThinBundle(ref, trustServer, tlscacert, trustDir, verificationImage, logLevel, timeout string, targets []string, keep bool) error {
-	err := tuf.VerifyCNABTrust(ref, trustServer, tlscacert, trustDir, timeout)
+	err := tuf.VerifyTrust(ref, "", trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func ValidateThinBundle(ref, trustServer, tlscacert, trustDir, verificationImage
 
 // ValidateThickBundle runs the TUF and in-toto validations for a CNAB bundle in thick format
 func ValidateThickBundle(ref, file, trustServer, tlscacert, trustDir, verificationImage, logLevel, timeout string, targets []string, keep bool) error {
-	err := tuf.VerifyFileTrust(ref, file, trustServer, tlscacert, trustDir, timeout)
+	err := tuf.VerifyTrust(ref, file, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return err
 	}
