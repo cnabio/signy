@@ -8,9 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
-	"path"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/docker/cli/cli/command"
@@ -26,13 +24,12 @@ import (
 )
 
 const (
-	layoutPath = "/in-toto/layout.template"
-	keyPath    = "/in-toto/key.pub"
+	VerificationImage = "trishankatdatadog/signy-in-toto-verifier:latest"
 )
 
 // Run will start a container, copy all In-Toto metadata in /in-toto
 // then run in-toto-verification
-func Run(image, layout, key, linksDir, logLevel string, targetFiles []string) error {
+func Run(verificationImage, verificationDir, logLevel string) error {
 	ctx := context.Background()
 	cli, err := initializeDockerCli()
 	if err != nil {
@@ -40,9 +37,12 @@ func Run(image, layout, key, linksDir, logLevel string, targetFiles []string) er
 	}
 
 	cfg := &container.Config{
-		Image:        image,
-		WorkingDir:   "/in-toto",
-		Cmd:          []string{"in-toto-verify", "--layout", "layout.template", "--layout-keys", "key.pub", "--link-dir", "/in-toto", "--verbose"},
+		Image:      verificationImage,
+		WorkingDir: "/in-toto",
+		// TODO: This is tied to VerificationImage right now.
+		// We call this Bash script that figures out what the root layout and its pubkeys are called.
+		// We should call in-toto-verify directly after figuring out what those files are called.
+		Cmd:          []string{"bash", "verify.sh"},
 		AttachStderr: true,
 		AttachStdout: true,
 		Tty:          true,
@@ -52,8 +52,8 @@ func Run(image, layout, key, linksDir, logLevel string, targetFiles []string) er
 	resp, err := cli.Client().ContainerCreate(ctx, cfg, &container.HostConfig{}, nil, name)
 	switch {
 	case client.IsErrNotFound(err):
-		log.Errorf("Unable to find image '%s' locally", image)
-		if err := pullImage(ctx, cli, image); err != nil {
+		log.Errorf("Unable to find image '%s' locally", verificationImage)
+		if err := pullImage(ctx, cli, verificationImage); err != nil {
 			return err
 		}
 		if resp, err = cli.Client().ContainerCreate(ctx, cfg, &container.HostConfig{}, nil, ""); err != nil {
@@ -65,7 +65,7 @@ func Run(image, layout, key, linksDir, logLevel string, targetFiles []string) er
 
 	defer cli.Client().ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{})
 
-	files, err := buildFileMap(layout, key, linksDir, targetFiles)
+	files, err := buildFileMap(verificationDir)
 	if err != nil {
 		return err
 	}
@@ -180,44 +180,19 @@ func generateArchive(files map[string][]byte) (io.Reader, error) {
 	return r, nil
 }
 
-func buildFileMap(layout, key, linksDir string, targeFiles []string) (map[string][]byte, error) {
+func buildFileMap(verificationDir string) (map[string][]byte, error) {
 	files := make(map[string][]byte)
 
-	lc, err := ioutil.ReadFile(layout)
+	filenames, err := ioutil.ReadDir(verificationDir)
 	if err != nil {
 		return nil, err
 	}
-	files[layoutPath] = lc
-
-	kc, err := ioutil.ReadFile(key)
-	if err != nil {
-		return nil, err
-	}
-	files[keyPath] = kc
-
-	f, err := ioutil.ReadDir(linksDir)
-	if err != nil {
-		return nil, err
-	}
-	for _, li := range f {
-		if !strings.Contains(li.Name(), ".link") {
-			continue
-		}
-		b, err := ioutil.ReadFile(filepath.Join(linksDir, li.Name()))
+	for _, filename := range filenames {
+		b, err := ioutil.ReadFile(filepath.Join(verificationDir, filename.Name()))
 		if err != nil {
 			return nil, err
 		}
-
-		files[filepath.Join("in-toto", li.Name())] = b
-	}
-
-	for _, fi := range targeFiles {
-		by, err := ioutil.ReadFile(fi)
-		if err != nil {
-			return nil, err
-		}
-
-		files[filepath.Join("in-toto", path.Base(fi))] = by
+		files[filepath.Join("in-toto", filename.Name())] = b
 	}
 
 	return files, nil

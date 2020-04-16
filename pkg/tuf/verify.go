@@ -15,27 +15,28 @@ import (
 )
 
 // VerifyTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle
-func VerifyTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout string) error {
+func VerifyTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout string) (*client.TargetWithRole, []byte, error) {
+	var bun *bundle.Bundle
+	var buf []byte
+
 	target, trustedSHA, err := GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
-		return err
+		return target, buf, err
 	}
 	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
 
-	var bun *bundle.Bundle
-	var buf []byte
 	if localFile == "" {
 		log.Infof("Pulling bundle from registry: %v", ref)
 		bun, err = cnab.Pull(ref)
 		if err != nil {
-			return fmt.Errorf("cannot pull bundle: %v", err)
+			return target, buf, fmt.Errorf("cannot pull bundle: %v", err)
 		}
 		buf, err = json.MarshalCanonical(bun)
 	} else {
 		buf, err = ioutil.ReadFile(localFile)
 	}
 	if err != nil {
-		return err
+		return target, buf, err
 	}
 
 	err = verifyTargetSHAFromBytes(trustedSHA, buf)
@@ -43,7 +44,7 @@ func VerifyTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout strin
 		log.Infof("The SHA sums are equal: %v\n", trustedSHA)
 	}
 
-	return err
+	return target, buf, err
 }
 
 func verifyTargetSHAFromBytes(trustedSHA string, buf []byte) error {

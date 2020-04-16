@@ -101,7 +101,7 @@ INFO[0000] The SHA sums are equal: 540cc4dc213548ebbdffb2ab0ef58729e089d1887edbc
 - Add in-toto metadata when signing a thin bundle:
 
 ```
-$ ./scripts/signy-sign.sh testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/demo.layout.template --links testdata/intoto --layout-key testdata/intoto/alice.pub
+$ ./scripts/signy-sign.sh testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/root.layout --links testdata/intoto --layout-key testdata/intoto/alice.pub
 INFO[0000] Adding In-Toto layout and links metadata to TUF
 INFO[0000] Pushed trust data for localhost:5000/thin-intoto:v2: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] Starting to copy image cnab/helloworld:0.1.1
@@ -113,7 +113,7 @@ INFO[0001] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9e
 - verifying the signature of a thin bundle and running the in-toto verifications in a container:
 
 ```
-$ ./scripts/signy-verify.sh localhost:5000/thin-intoto:v2 --in-toto --target testdata/intoto/foo.tar.gz
+$ ./scripts/signy-verify.sh localhost:5000/thin-intoto:v2 --in-toto
 INFO[0000] Pulled trust data for localhost:5000/thin-intoto:v2, with role targets - SHA256: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] Pulling bundle from registry: localhost:5000/thin-intoto:v2
 INFO[0000] Computed SHA: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
@@ -167,17 +167,16 @@ INFO[0001] The software product passed all verification.
 - similarly for a thick bundle:
 
 ```
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/helloworld-0.1.1.tgz --thick  localhost:5000/thick-bundle-signature:v2 --in-toto --layout testdata/intoto/demo.layout.template --links testdata/intoto --layout-key testdata/intoto/alice.pub
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/helloworld-0.1.1.tgz --thick  localhost:5000/thick-bundle-signature:v2 --in-toto --layout testdata/intoto/root.layout --links testdata/intoto --layout-key testdata/intoto/alice.pub
 INFO[0000] Adding In-Toto layout and links metadata to TUF
 INFO[0000] Pushed trust data for localhost:5000/thick-bundle-signature:v2: 540cc4dc213548ebbdffb2ab0ef58729e089d1887edbcde6eeca851de624da70
 
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:5000/thick-bundle-signature:v2 --thick --local testdata/cnab/helloworld-0.1.1.tgz --in-toto --target testdata/intoto/foo.tar.gz
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:5000/thick-bundle-signature:v2 --thick --local testdata/cnab/helloworld-0.1.1.tgz --in-toto
 ```
 
 Notes:
 
 - see current limitations about the in-toto signing key of the root layout
-- the `--target` currently passed is because the in-toto verification used as example needs to validate that file. In a real scenario, the verification would perform operations on the CNAB bundle. (Help needed to create a real-world in-toto layout)
 
 ### Tearing down
 
