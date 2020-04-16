@@ -31,7 +31,7 @@ func VerifyCNABTrust(ref, trustServer, tlscacert, trustDir, timeout string) erro
 		return err
 	}
 
-	err = verifyTargetSHAFromBytes(target, buf)
+	err = verifyTargetSHAFromBytes(trustedSHA, buf)
 	if err == nil {
 		log.Infof("The SHA sums are equal: %v\n", trustedSHA)
 	}
@@ -52,7 +52,7 @@ func VerifyFileTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout s
 		return err
 	}
 
-	err = verifyTargetSHAFromBytes(target, buf)
+	err = verifyTargetSHAFromBytes(trustedSHA, buf)
 	if err == nil {
 		log.Infof("The SHA sums are equal: %v\n", trustedSHA)
 	}
@@ -60,8 +60,7 @@ func VerifyFileTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout s
 	return err
 }
 
-func verifyTargetSHAFromBytes(target *client.TargetWithRole, buf []byte) error {
-	trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
+func verifyTargetSHAFromBytes(trustedSHA string, buf []byte) error {
 	hasher := sha256.New()
 	hasher.Write(buf)
 	computedSHA := hex.EncodeToString(hasher.Sum(nil))
