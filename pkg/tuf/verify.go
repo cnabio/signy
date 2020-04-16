@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary/client"
 
+	"github.com/cnabio/cnab-go/bundle"
 	"github.com/cnabio/signy/pkg/cnab"
 )
 
@@ -21,10 +22,11 @@ func VerifyTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout strin
 	}
 	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
 
+	var bun *bundle.Bundle
 	var buf []byte
 	if localFile == "" {
 		log.Infof("Pulling bundle from registry: %v", ref)
-		bun, err := cnab.Pull(ref)
+		bun, err = cnab.Pull(ref)
 		if err != nil {
 			return fmt.Errorf("cannot pull bundle: %v", err)
 		}
