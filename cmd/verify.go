@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/cnabio/signy/pkg/trust"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/cnabio/signy/pkg/docker"
+	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
 )
 
@@ -16,10 +17,8 @@ type verifyCmd struct {
 	localFile string
 
 	intoto            bool
-	keepTempDir       bool
+	verifyOnOS        bool
 	verificationImage string
-	// TODO: remove this
-	targetFiles []string
 }
 
 func newVerifyCmd() *cobra.Command {
@@ -49,7 +48,7 @@ In order to also verify  in-toto metadata from the TUF collection, use the --in-
 
 Example:
 
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:5000/thin-intoto:v2 --in-toto --target testdata/intoto/foo.tar.gz
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:5000/thin-intoto:v2 --in-toto
 INFO[0000] Pulled trust data for localhost:5000/thin-intoto:v2, with role targets - SHA256: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] Pulling bundle from registry: localhost:5000/thin-intoto:v2
 INFO[0000] Computed SHA: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
@@ -75,28 +74,25 @@ INFO[0001] The software product passed all verification.
 	cmd.Flags().StringVarP(&verify.localFile, "local", "", "", "Local file to validate the SHA256 against (mandatory for thick bundles)")
 
 	cmd.Flags().BoolVarP(&verify.intoto, "in-toto", "", false, "If passed, will try to fetch in-toto metadata from TUF and perform the verification")
-	cmd.Flags().StringVarP(&verify.verificationImage, "image", "", "github.com/cnabio/signy/in-toto-container/verification:v1", "container image to run the in-toto verification")
-	cmd.Flags().BoolVarP(&verify.keepTempDir, "keep", "", false, "if passed, the temporary directory where the in-toto metadata is pulled is not deleted")
-	cmd.Flags().StringArrayVarP(&verify.targetFiles, "target", "", nil, "target files to copy in container for in-toto verifications")
+	cmd.Flags().BoolVarP(&verify.verifyOnOS, "verify-on-os", "", false, "If passed, will run in-toto inspections on the OS instead of in container")
+	cmd.Flags().StringVarP(&verify.verificationImage, "image", "", docker.VerificationImage, "container image to run the in-toto verification")
 
 	return cmd
 }
 
 func (v *verifyCmd) run() error {
-	if v.thick {
-		if v.localFile == "" {
-			return fmt.Errorf("no local file provided for thick bundle verification")
-		}
-		if v.intoto {
-			return trust.ValidateThickBundle(v.ref, v.localFile, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, timeout, v.targetFiles, v.keepTempDir)
-		}
-
-		return tuf.VerifyTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
+	if v.thick && v.localFile == "" {
+		return fmt.Errorf("no local file provided for thick bundle verification")
 	}
 
-	if v.intoto {
-		return trust.ValidateThinBundle(v.ref, trustServer, tlscacert, trustDir, v.verificationImage, logLevel, timeout, v.targetFiles, v.keepTempDir)
+	target, bundle, err := tuf.VerifyTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
+
+	if err == nil && v.intoto {
+		if v.verifyOnOS {
+			log.Warn("Running in-toto inspections on the OS instead of in container...")
+		}
+		err = intoto.Verify(v.verifyOnOS, v.verificationImage, target, bundle, logLevel)
 	}
 
-	return tuf.VerifyTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
+	return err
 }
