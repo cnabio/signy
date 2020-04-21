@@ -101,7 +101,7 @@ INFO[0000] The SHA sums are equal: 540cc4dc213548ebbdffb2ab0ef58729e089d1887edbc
 - Add in-toto metadata when signing a thin bundle:
 
 ```
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/demo.layout.template --links testdata/intoto --layout-key testdata/intoto/alice.pub
+$ ./scripts/signy-sign.sh testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/demo.layout.template --links testdata/intoto --layout-key testdata/intoto/alice.pub
 INFO[0000] Adding In-Toto layout and links metadata to TUF
 INFO[0000] Pushed trust data for localhost:5000/thin-intoto:v2: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] Starting to copy image cnab/helloworld:0.1.1
@@ -113,7 +113,7 @@ INFO[0001] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9e
 - verifying the signature of a thin bundle and running the in-toto verifications in a container:
 
 ```
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:5000/thin-intoto:v2 --in-toto --target testdata/intoto/foo.tar.gz
+$ ./scripts/signy-verify.sh localhost:5000/thin-intoto:v2 --in-toto --target testdata/intoto/foo.tar.gz
 INFO[0000] Pulled trust data for localhost:5000/thin-intoto:v2, with role targets - SHA256: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] Pulling bundle from registry: localhost:5000/thin-intoto:v2
 INFO[0000] Computed SHA: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
