@@ -1,5 +1,8 @@
 # Imports.
 
+# 1st-party.
+from keys import KeyDict
+
 # 2nd-party.
 from typing import Any, Dict, List, Optional
 
@@ -55,12 +58,10 @@ def require(pattern: str) -> ArtifactRule:
 # https://github.com/in-toto/docs/blob/master/in-toto-spec.md#431-steps
 
 Command = List[str]
-# https://github.com/python/typing/issues/182#issuecomment-185996450
-PublicKeys = Dict[str, Any]
 Step = Dict[str, Any]
 Steps = List[Step]
 
-def step(name: str, materials: ArtifactRules, products: ArtifactRules, pubkeys: PublicKeys, expected_command: Command = [], threshold: int = 1) -> Step:
+def step(name: str, materials: ArtifactRules = [], products: ArtifactRules = [], pubkeys: KeyDict = {}, expected_command: Command = [], threshold: int = 1) -> Step:
     assert threshold > 0, f'{threshold} <= 0'
     return {
         "_type": "step",
@@ -81,7 +82,7 @@ def step(name: str, materials: ArtifactRules, products: ArtifactRules, pubkeys: 
 Inspection = Dict[str, Any]
 Inspections = List[Inspection]
 
-def inspection(name: str, materials: ArtifactRules, products: ArtifactRules, command: Command = []) -> Inspection:
+def inspection(name: str, materials: ArtifactRules = [], products: ArtifactRules = [], command: Command = []) -> Inspection:
     return {
         "_name": name,
         "expected_materials": materials,
@@ -92,7 +93,7 @@ def inspection(name: str, materials: ArtifactRules, products: ArtifactRules, com
 # Layouts
 # https://github.com/in-toto/docs/blob/master/in-toto-spec.md#43-file-formats-layout
 
-def layout(steps: Steps, inspections: Inspections, keys: PublicKeys, expires_days: int = 0, expires_months: int = 0, expires_years: int = 0) -> Layout:
+def layout(steps: Steps = [], inspections: Inspections = [], keys: KeyDict = {}, expires_days: int = 0, expires_months: int = 0, expires_years: int = 0) -> Layout:
     l = Layout.read({
         "_type": "layout",
         "keys": keys,
