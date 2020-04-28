@@ -1,7 +1,13 @@
 # Imports.
 
 # 1st-party.
-from keys import KeyDict
+from keys import (
+    KeyDict, Threshold,
+    get_public_keys_from_keyring,
+    sorted_list_of_keyids,
+    write_and_read_new_keys,
+)
+
 
 # 2nd-party.
 from typing import Any, Dict, List, Optional
@@ -15,17 +21,16 @@ from in_toto.models.layout import Layout
 ArtifactRule = List[str]
 ArtifactRules = List[ArtifactRule]
 
-def allow(pattern: str) -> ArtifactRule:
+def ALLOW(pattern: str) -> ArtifactRule:
     return ["ALLOW", pattern]
 
-def create(pattern: str) -> ArtifactRule:
+def CREATE(pattern: str) -> ArtifactRule:
     return ["CREATE", pattern]
 
-def delete(pattern: str) -> ArtifactRule:
+def DELETE(pattern: str) -> ArtifactRule:
     return ["DELETE", pattern]
 
-
-def disallow(pattern: str) -> ArtifactRule:
+def DISALLOW(pattern: str) -> ArtifactRule:
     return ["DISALLOW", pattern]
 
 def _match(pattern: str, materials_or_products: str, step_name: str, source_path_prefix: Optional[str] = None, destination_path_prefix: Optional[str] = None) -> ArtifactRule:
@@ -42,16 +47,16 @@ def _match(pattern: str, materials_or_products: str, step_name: str, source_path
     l += ["FROM", step_name]
     return l
 
-def match_materials(pattern: str, step_name: str, source_path_prefix: Optional[str] = None, destination_path_prefix: Optional[str] = None) -> ArtifactRule:
+def MATCH_MATERIALS(pattern: str, step_name: str, source_path_prefix: Optional[str] = None, destination_path_prefix: Optional[str] = None) -> ArtifactRule:
     return _match(pattern, "MATERIALS", step_name, source_path_prefix, destination_path_prefix)
 
-def match_products(pattern: str, step_name: str, source_path_prefix: Optional[str] = None, destination_path_prefix: Optional[str] = None) -> ArtifactRule:
+def MATCH_PRODUCTS(pattern: str, step_name: str, source_path_prefix: Optional[str] = None, destination_path_prefix: Optional[str] = None) -> ArtifactRule:
     return _match(pattern, "PRODUCTS", step_name, source_path_prefix, destination_path_prefix)
 
-def modify(pattern: str) -> ArtifactRule:
+def MODIFY(pattern: str) -> ArtifactRule:
     return ["MODIFY", pattern]
 
-def require(pattern: str) -> ArtifactRule:
+def REQUIRE(pattern: str) -> ArtifactRule:
     return ["REQUIRE", pattern]
 
 # Steps
@@ -75,6 +80,22 @@ def step(name: str, materials: ArtifactRules = [], products: ArtifactRules = [],
         "expected_command": expected_command,
         "threshold": threshold,
     }
+
+def get_pubkeys(this_step_name, m: int = 1, n: int = 1) -> KeyDict:
+    threshold = Threshold(m, n)
+    keyring = write_and_read_new_keys(this_step_name, threshold)
+    return get_public_keys_from_keyring(keyring)
+
+def get_step(this_step_name: str, m: int = 1, n: int = 1, materials: ArtifactRules = [], products: ArtifactRules = []) -> (Step, KeyDict):
+    this_step_pubkeys = get_pubkeys(this_step_name, m, n)
+    this_step = step(
+        name = this_step_name,
+        materials = materials,
+        products = products,
+        pubkeys = sorted_list_of_keyids(this_step_pubkeys),
+        threshold = m,
+    )
+    return this_step, this_step_pubkeys
 
 # Inspections
 # https://github.com/in-toto/docs/blob/master/in-toto-spec.md#432-inspections
