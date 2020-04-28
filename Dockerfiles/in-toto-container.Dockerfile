@@ -12,3 +12,5 @@ RUN apt-get update \
     && mkdir /in-toto \
     # Let bash figure out what the root layout and its pubkeys are called.
     && echo 'in-toto-verify --layout *.layout --layout-keys *.pub --link-dir . --verbose' > /in-toto/verify.sh
+
+ENTRYPOINT ["bash", "/in-toto/verify.sh"]
