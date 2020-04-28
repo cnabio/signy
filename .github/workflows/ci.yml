@@ -19,7 +19,7 @@ jobs:
     # https://github.community/t5/GitHub-Actions/How-to-get-just-the-tag-name/td-p/31595
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo ::set-output name=VERSION::${GITHUB_SHA}
 
     - name: Docker Build & Push
       uses: mr-smithers-excellent/docker-build-push@v3.1
