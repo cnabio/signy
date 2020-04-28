@@ -20,7 +20,8 @@ fi
 cd $CWD
 
 # Build an image containing python-in-toto to verify bundles/images with.
-docker build --rm -t trishankatdatadog/signy-in-toto-verifier:latest -f Dockerfiles/in-toto-container.Dockerfile Dockerfiles/
+TAG=$(git describe --tags --abbrev=0)
+docker build --rm -t cnabio/signy-in-toto-verifier:$TAG -f Dockerfiles/in-toto-container.Dockerfile Dockerfiles/
 
 # We will sign and push this to our localhost Notary and Registry.
 echo "Pulling hello-world..."
