@@ -25,6 +25,8 @@ import (
 
 const (
 	VerificationImage = "trishankatdatadog/signy-in-toto-verifier:latest"
+	// Where we expect to copy in-toto artifacts to.
+	WorkingDir = "/in-toto"
 )
 
 // Run will start a container, copy all In-Toto metadata in /in-toto
@@ -37,12 +39,8 @@ func Run(verificationImage, verificationDir, logLevel string) error {
 	}
 
 	cfg := &container.Config{
-		Image:      verificationImage,
-		WorkingDir: "/in-toto",
-		// TODO: This is tied to VerificationImage right now.
-		// We call this Bash script that figures out what the root layout and its pubkeys are called.
-		// We should call in-toto-verify directly after figuring out what those files are called.
-		Cmd:          []string{"bash", "verify.sh"},
+		Image:        verificationImage,
+		WorkingDir:   WorkingDir,
 		AttachStderr: true,
 		AttachStdout: true,
 		Tty:          true,
@@ -192,7 +190,7 @@ func buildFileMap(verificationDir string) (map[string][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		files[filepath.Join("in-toto", filename.Name())] = b
+		files[filepath.Join(WorkingDir, filename.Name())] = b
 	}
 
 	return files, nil
