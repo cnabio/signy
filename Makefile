@@ -3,7 +3,7 @@ ORG             := cnabio
 BINDIR          := $(CURDIR)/bin
 GOFLAGS         :=
 GOBUILDTAGS     := osusergo
-LDFLAGS         := -w -s
+LDFLAGS         := -w -s -X github.com/cnabio/signy/pkg/docker.Tag=$(shell git describe --tags --abbrev=0)
 
 ifeq ($(OS),Windows_NT)
 	TARGET = $(PROJECT).exe
@@ -17,7 +17,8 @@ endif
 
 .PHONY: build
 build:
-	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags '$(LDFLAGS)' -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
+	echo $(git describe --tags --abbrev=0)
+	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags "$(LDFLAGS)" -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
 
 .PHONY: install
 install: build

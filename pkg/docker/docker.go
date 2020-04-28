@@ -23,8 +23,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	Tag               string
+	VerificationImage = "cnabio/signy-in-toto-verifier:" + Tag
+)
+
 const (
-	VerificationImage = "trishankatdatadog/signy-in-toto-verifier:latest"
 	// Where we expect to copy in-toto artifacts to.
 	WorkingDir = "/in-toto"
 )
