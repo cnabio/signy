@@ -1,38 +1,38 @@
-name: GitHub Actions
-on: [push, pull_request]
+name: Build, test, and lint
+on:
+  pull_request:
+  push:
+    branches: [master]
+  release:
+    types: [published]
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-
-    - name: Set up Go 1.13
-      uses: actions/setup-go@v1
-      with:
-        go-version: 1.13
-      id: go
+    - name: Set up Go
+      uses: actions/setup-go@v2
 
     - name: Check out code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
-    # https://github.community/t5/GitHub-Actions/How-to-get-just-the-tag-name/td-p/31595
-    - name: Get the version
-      id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_SHA}
-
-    - name: Docker Build & Push
-      uses: mr-smithers-excellent/docker-build-push@v3.1
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v1.1.0
+      if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
       with:
-        image: cnabio/signy-in-toto-verifier
-        tag: ${{ steps.get_version.outputs.VERSION }}
-        registry: docker.io
+        repository: cnabio/signy-in-toto-verifier
+        tag_with_ref: true
         dockerfile: Dockerfiles/in-toto-container.Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build, Test, Lint
+    - name: Build, test, and lint
+      env:
+        TAG: ${{ (github.event_name == 'release' && github.ref) || 'latest' }}
       run: |
-        export GOPATH=$HOME/go && export GOBIN=$(go env GOPATH)/bin && export PATH=$PATH:$GOPATH&& export PATH=$PATH:$GOBIN && mkdir -p $GOBIN
-
-        make bootstrap build test lint
+        export GOPATH=$HOME/go
+        export GOBIN=$(go env GOPATH)/bin
+        export PATH=$PATH:$GOPATH
+        export PATH=$PATH:$GOBIN
+        mkdir -p $GOBIN
+        make TAG=$TAG bootstrap build test lint

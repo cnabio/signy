@@ -1,12 +1,12 @@
 #!/bin/bash
 
-TAG=$(git rev-parse --verify HEAD)
+TAG=dev
 
 build () {
     echo "Building..."
     # Build an image containing python-in-toto to verify bundles/images with.
     docker build --rm -t cnabio/signy-in-toto-verifier:$TAG -f Dockerfiles/in-toto-container.Dockerfile Dockerfiles/
-    make install
+    make TAG=$TAG install
     echo "...done."
     echo
 }
