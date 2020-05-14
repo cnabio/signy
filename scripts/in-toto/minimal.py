@@ -3,41 +3,40 @@
 # Imports.
 
 # 1st-party.
-from keys import (
-    KeyDict, Threshold,
-    get_private_keys_from_keyring,
-)
+from keys import KeyDict
 from layout import (
-    ALLOW, MATCH_MATERIALS, MATCH_PRODUCTS, MODIFY,
+    CREATE, MATCH_MATERIALS, MATCH_PRODUCTS, MODIFY,
     Step,
-    get_step, layout, write_and_read_new_keys,
+    layout, step,
 )
 
-# 3rd-party
-from in_toto.models.metadata import Metablock
+# 3rd-party.
+import click
 
 # Constants
-# We assume using JsonPath to select elements within a bundle.
-# TODO: How should we escape JsonPath to work around fnmatch?
+# NOTE: we use JsonPath to record leaves,
+# but NOT to specify patterns in artifact rules.
+# We use fnmatch to specify patterns in artifact rules.
 BUNDLE_ROOT = 'file://bundle.json$'
-BUNDLE_ALL = f'{BUNDLE_ROOT}..*'
+BUNDLE_ALL = f'{BUNDLE_ROOT}.*'
 
 #  Step functions.
 
-def get_developer_step() -> (Step, KeyDict):
-    return get_step(
+def get_developer_step(trust_dir: str) -> (Step, KeyDict):
+    return step(
+        trust_dir,
         'developer',
         # Developers do NOT receive any materials/input.
         # However, they MUST produce the following products/output. 
         products = [
-            # 1. Developers are allowed to write anything under the bundle.
-            ALLOW(BUNDLE_ALL),
-            # TODO: 2. Developers are NOT allowed to fill in image digests and sizes?
+            # 1. Developers are allowed to create anything under the bundle.
+            CREATE(BUNDLE_ALL),
         ],
     )
 
-def get_machine_step(developer_step: Step, this_step_name: str = 'machine') -> (Step, KeyDict):
-    return get_step(
+def get_machine_step(trust_dir: str, developer_step: Step, this_step_name: str = 'machine') -> (Step, KeyDict):
+    return step(
+        trust_dir,
         this_step_name,
         # Machines MUST receive the following materials.
         materials = [
@@ -45,7 +44,7 @@ def get_machine_step(developer_step: Step, this_step_name: str = 'machine') -> (
             MATCH_PRODUCTS(
                 pattern = BUNDLE_ALL,
                 # FIXME: Should be {developer_step.name}.
-                step_name = developer_step["name"],
+                step_name = developer_step['name'],
             ),
         ],
         # Machines MUST produce the following products.
@@ -56,31 +55,32 @@ def get_machine_step(developer_step: Step, this_step_name: str = 'machine') -> (
                 step_name = this_step_name,
             ),
             # 2. However, machines MUST fill in ONLY image digests and sizes.
-            # TODO: double-check pattern.
             MODIFY(f'{BUNDLE_ROOT}.images.*'),
         ],
     )
 
 # Layout functions.
 
-def get_layout() -> Metablock:
-    developer_step, developer_pubkeys = get_developer_step()
-    machine_step, machine_pubkeys = get_machine_step(developer_step)
+@click.command()
+@click.option('-d', '--dir', 'trust_dir', default='~/.signy', help='Directory where the trust data is persisted to.')
+@click.option('-o', '--output', 'output_filename', default='minimal.root.layout', help='Filename to write root layout to.')
+def write_layout(trust_dir: str, output_filename: str) -> None:
+    developer_step, developer_pubkeys = get_developer_step(trust_dir)
+    machine_step, machine_pubkeys = get_machine_step(trust_dir, developer_step)
 
-    threshold = Threshold(1, 1)
-    keyring = write_and_read_new_keys('layout', threshold)
-    signed = layout(
+    metablock = layout(
+        trust_dir,
+        'minimal-root-layout',
         steps = [developer_step, machine_step],
         keys = {**developer_pubkeys, **machine_pubkeys},
         expires_years = 1,
     )
-    metablock = Metablock(signed=signed)
-    for k in get_private_keys_from_keyring(keyring).values():
-        metablock.sign(k)
-    print(str(metablock))
-    return metablock
+
+    metablock.dump(output_filename)
+    print(f'Wrote minimal root layout to: {output_filename}')
+    print(f'jq -C "." {output_filename} | less -R')
 
 # CLI.
 
 if __name__ == '__main__':
-    get_layout()
+    write_layout() # pylint: disable=no-value-for-parameter
