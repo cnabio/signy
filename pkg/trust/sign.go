@@ -4,10 +4,11 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/cnabio/signy/pkg/cnab"
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
-	log "github.com/sirupsen/logrus"
 )
 
 // SignAndPublish takes a CNAB bundle, pushes the signature and metadata to a trust server, then pushes the bundle

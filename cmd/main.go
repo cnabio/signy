@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cnabio/signy/pkg/tuf"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/cnabio/signy/pkg/tuf"
 )
 
 var (
