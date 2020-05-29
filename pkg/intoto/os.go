@@ -44,7 +44,7 @@ func getRootLayoutPath(verificationDir string) (string, error) {
 }
 
 // Verify performs the in-toto validation steps
-func VerifyOnOS(verificationDir string) error {
+func verifyOnOS(verificationDir string) error {
 	var rootLayoutPubKey in_toto.Key
 	rootLayoutPubKeys := make(map[string]in_toto.Key)
 	filenames, err := getFilesWithSuffix(verificationDir, ".pub")

@@ -16,23 +16,19 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
-    - name: Build and push Docker images
+    - name: Build and push RELEASE and LATEST Docker images
       uses: docker/build-push-action@v1.1.0
       if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
       with:
         repository: cnabio/signy-in-toto-verifier
-        tag_with_ref: true
-        dockerfile: Dockerfiles/in-toto-container.Dockerfile
+        tags: ${{ github.ref}}, latest
+        dockerfile: in-toto-container.Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build, test, and lint
       env:
-        TAG: ${{ (github.event_name == 'release' && github.ref) || 'latest' }}
+        TAG: 'latest'
       run: |
-        export GOPATH=$HOME/go
-        export GOBIN=$(go env GOPATH)/bin
-        export PATH=$PATH:$GOPATH
-        export PATH=$PATH:$GOBIN
-        mkdir -p $GOBIN
+        export GOPATH=$HOME/go && export GOBIN=$(go env GOPATH)/bin && export PATH=$PATH:$GOPATH && export PATH=$PATH:$GOBIN && mkdir -p $GOBIN
         make TAG=$TAG bootstrap build test lint

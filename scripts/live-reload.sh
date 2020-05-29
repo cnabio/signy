@@ -1,11 +1,11 @@
 #!/bin/bash
 
-TAG=dev
+TAG=latest
 
 build () {
     echo "Building..."
     # Build an image containing python-in-toto to verify bundles/images with.
-    docker build --rm -t cnabio/signy-in-toto-verifier:$TAG -f Dockerfiles/in-toto-container.Dockerfile Dockerfiles/
+    docker build --rm -t cnabio/signy-in-toto-verifier:$TAG -f in-toto-container.Dockerfile .
     make TAG=$TAG install
     echo "...done."
     echo

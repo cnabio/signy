@@ -85,14 +85,37 @@ func (v *verifyCmd) run() error {
 		return fmt.Errorf("no local file provided for thick bundle verification")
 	}
 
-	target, bundle, err := tuf.VerifyTrust(v.ref, v.localFile, trustServer, tlscacert, trustDir, timeout)
-
-	if err == nil && v.intoto {
-		if v.verifyOnOS {
-			log.Warn("Running in-toto inspections on the OS instead of in container...")
-		}
-		err = intoto.Verify(v.verifyOnOS, v.verificationImage, target, bundle, logLevel)
+	if v.verifyOnOS && v.verificationImage != "" {
+		return fmt.Errorf("verification on OS and in container are mutually exclusive")
 	}
 
-	return err
+	var bundle []byte
+	var err error
+	if v.thick {
+		bundle, err = tuf.GetThickBundle(v.localFile)
+	} else {
+		bundle, err = tuf.GetThinBundle(v.ref)
+	}
+	if err != nil {
+		return err
+	}
+
+	target, trustedSHA, err := tuf.GetTargetAndSHA(v.ref, trustServer, tlscacert, trustDir, timeout)
+	if err != nil {
+		return err
+	}
+	err = tuf.VerifyTrust(bundle, trustedSHA)
+	if err != nil {
+		return err
+	}
+
+	if v.intoto {
+		if v.verifyOnOS {
+			log.Warn("Running in-toto inspections on the OS instead of in container...")
+			return intoto.VerifyOnOS(target, bundle)
+		}
+		return intoto.VerifyInContainer(target, bundle, v.verificationImage, logLevel)
+	}
+
+	return nil
 }

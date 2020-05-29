@@ -17,7 +17,7 @@ endif
 
 .PHONY: build
 build:
-	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags "$(LDFLAGS)" -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
+	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags '$(LDFLAGS)' -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
 
 .PHONY: install
 install: build

@@ -29,8 +29,7 @@ var (
 )
 
 const (
-	// Where we expect to copy in-toto artifacts to.
-	WorkingDir = "/in-toto"
+	workingDir = "/in-toto"	// Where we expect to copy in-toto artifacts to
 )
 
 // Run will start a container, copy all In-Toto metadata in /in-toto
@@ -44,7 +43,7 @@ func Run(verificationImage, verificationDir, logLevel string) error {
 
 	cfg := &container.Config{
 		Image:        verificationImage,
-		WorkingDir:   WorkingDir,
+		WorkingDir:   workingDir,
 		AttachStderr: true,
 		AttachStdout: true,
 		Tty:          true,
@@ -194,7 +193,7 @@ func buildFileMap(verificationDir string) (map[string][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		files[filepath.Join(WorkingDir, filename.Name())] = b
+		files[filepath.Join(workingDir, filename.Name())] = b
 	}
 
 	return files, nil
