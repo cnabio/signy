@@ -13,12 +13,12 @@ import (
 	"github.com/cnabio/signy/pkg/cnab"
 )
 
-func GetThickBundle(localFile string) ([] byte, error) {
+func GetThickBundle(localFile string) ([]byte, error) {
 	log.Infof("Reading thick bundle on disk: %v", localFile)
 	return ioutil.ReadFile(localFile)
 }
 
-func GetThinBundle(ref string) ([] byte, error) {
+func GetThinBundle(ref string) ([]byte, error) {
 	log.Infof("Pulling thin bundle from registry: %v", ref)
 	bun, err := cnab.Pull(ref)
 	if err != nil {
@@ -28,7 +28,7 @@ func GetThinBundle(ref string) ([] byte, error) {
 }
 
 // VerifyTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle
-func VerifyTrust(buf [] byte, trustedSHA string) error {
+func VerifyTrust(buf []byte, trustedSHA string) error {
 	err := verifyTargetSHAFromBytes(buf, trustedSHA)
 	if err == nil {
 		log.Infof("The SHA sums are equal: %v\n", trustedSHA)

@@ -6,9 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cnabio/signy/pkg/docker"
 	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary/client"
+
+	"github.com/cnabio/signy/pkg/docker"
 )
 
 const (

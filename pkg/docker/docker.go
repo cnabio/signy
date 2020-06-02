@@ -29,7 +29,7 @@ var (
 )
 
 const (
-	workingDir = "/in-toto"	// Where we expect to copy in-toto artifacts to
+	workingDir = "/in-toto" // Where we expect to copy in-toto artifacts to
 )
 
 // Run will start a container, copy all In-Toto metadata in /in-toto
