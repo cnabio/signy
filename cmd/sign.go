@@ -57,7 +57,7 @@ In order to also push in-toto metadata to the TUF collection, use the --in-toto 
 
 Example:
 
-$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/demo.layout.template --links testdata/intoto --layout-key testdata/intoto/alice.pub
+$ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 sign testdata/cnab/bundle.json localhost:5000/thin-intoto:v2 --in-toto --layout testdata/intoto/root.layout --links testdata/intoto --layout-key testdata/intoto/alice.pub
 INFO[0000] Adding In-Toto layout and links metadata to TUF
 INFO[0000] Pushed trust data for localhost:5000/thin-intoto:v2: c7e92bd51f059d60b15ad456edf194648997d739f60799b37e08edafd88a81b5
 INFO[0000] Starting to copy image cnab/helloworld:0.1.1

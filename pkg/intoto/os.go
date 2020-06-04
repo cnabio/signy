@@ -8,41 +8,77 @@ import (
 	"strings"
 	"time"
 
-	canonicaljson "github.com/docker/go/canonical/json"
 	"github.com/in-toto/in-toto-golang/in_toto"
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	LayoutDefaultName = "layout.template"
-	KeyDefaultName    = "key.pub"
-)
+func getFilesWithSuffix(verificationDir, suffix string) ([]string, error) {
+	var absPaths []string
+
+	filenames, err := ioutil.ReadDir(verificationDir)
+	if err != nil {
+		return absPaths, fmt.Errorf("cannot load verification dir %v: %v", verificationDir, err)
+	}
+
+	for _, filename := range filenames {
+		relPath := filename.Name()
+		if strings.HasSuffix(relPath, suffix) {
+			absPath := filepath.Join(verificationDir, relPath)
+			absPaths = append(absPaths, absPath)
+		}
+	}
+	return absPaths, nil
+}
+
+func getRootLayoutPath(verificationDir string) (string, error) {
+	var rootLayoutFileName string
+	filenames, err := getFilesWithSuffix(verificationDir, ".layout")
+	if err != nil {
+		return rootLayoutFileName, err
+	}
+	filenamesLength := len(filenames)
+	if filenamesLength != 1 {
+		return rootLayoutFileName, fmt.Errorf("not exactly one root layout in %v: %v", verificationDir, filenamesLength)
+	}
+	return filenames[0], nil
+}
 
 // Verify performs the in-toto validation steps
-func Verify(layout, linkDir string, layoutKeyPaths ...string) error {
-	layoutKeys := make(map[string]in_toto.Key)
-	for _, p := range layoutKeyPaths {
-		var k in_toto.Key
-		if err := k.LoadPublicKey(p); err != nil {
-			return fmt.Errorf("cannot load layout public key %v: %v", p, err)
+func verifyOnOS(verificationDir string) error {
+	var rootLayoutPubKey in_toto.Key
+	rootLayoutPubKeys := make(map[string]in_toto.Key)
+	filenames, err := getFilesWithSuffix(verificationDir, ".pub")
+	if err != nil {
+		return fmt.Errorf("cannot read root layout pubkeys in %v: %v", verificationDir, err)
+	}
+	for _, filename := range filenames {
+		err = rootLayoutPubKey.LoadPublicKey(filename)
+		if err != nil {
+			return fmt.Errorf("cannot load layout public key %v: %v", filename, err)
 		}
-		layoutKeys[k.KeyId] = k
+		rootLayoutPubKeys[rootLayoutPubKey.KeyId] = rootLayoutPubKey
 	}
 
-	var mb in_toto.Metablock
-	if err := mb.Load(layout); err != nil {
-		return fmt.Errorf("cannot load layout from file file %v: %v", layout, err)
+	var rootLayout in_toto.Metablock
+	rootLayoutFileName, err := getRootLayoutPath(verificationDir)
+	if err != nil {
+		return err
+	}
+	if err := rootLayout.Load(rootLayoutFileName); err != nil {
+		return fmt.Errorf("cannot load root layout from %v: %v", rootLayoutFileName, err)
 	}
 
-	if err := ValidateLayout(mb.Signed.(in_toto.Layout)); err != nil {
-		return fmt.Errorf("invalid metatada found: %v", err)
+	if err := ValidateLayout(rootLayout.Signed.(in_toto.Layout)); err != nil {
+		return fmt.Errorf("invalid metadata found: %v", err)
 	}
 
-	if _, err := in_toto.InTotoVerifyWithDirectory(mb, layoutKeys, linkDir, linkDir, "", make(map[string]string)); err != nil {
+	//TODO: get parameter substitutions, if any, from user
+	parameterSubstitutions := make(map[string]string)
+	if _, err := in_toto.InTotoVerifyWithDirectory(rootLayout, rootLayoutPubKeys, verificationDir, verificationDir, "", parameterSubstitutions); err != nil {
 		return fmt.Errorf("failed verification: %v", err)
 	}
 
-	log.Infof("Verification succeeded for layout %v", layout)
+	log.Infof("Verification succeeded for layout %v", rootLayoutFileName)
 	return nil
 }
 
@@ -199,89 +235,4 @@ func ValidateFromPath(p string) error {
 		return err
 	}
 	return ValidateLayout(*l)
-}
-
-// Metadata represents the In-Toto metadata stored in TUF.
-// All fields are represented as []byte in order to be stored in the Custom field for TUF metadata.
-type Metadata struct {
-	// TODO: remove this once the TUF targets key is used to sign the root layout
-	Key    []byte            `json:"key"`
-	Layout []byte            `json:"layout"`
-	Links  map[string][]byte `json:"links"`
-}
-
-// WriteMetadataFiles writes the content of a metadata object into files in a directory
-func WriteMetadataFiles(m *Metadata, dir string) error {
-	abs, err := filepath.Abs(dir)
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(filepath.Join(abs, LayoutDefaultName), m.Layout, 0644)
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(filepath.Join(abs, KeyDefaultName), m.Key, 0644)
-	if err != nil {
-		return err
-	}
-
-	for n, c := range m.Links {
-		err = ioutil.WriteFile(filepath.Join(abs, n), c, 0644)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// GetMetadataRawMessage takes In-Toto metadata and returns a canonical RawMessage
-// that can be stored in the TUF targets custom field.
-//
-// TODO: layout signing key should not be passed by the library.
-// Layouts should be signed with the targets key used to sign the TUF collection.
-func GetMetadataRawMessage(layout string, linkDir string, layoutKey string) (canonicaljson.RawMessage, error) {
-	k, err := ioutil.ReadFile(layoutKey)
-	if err != nil {
-		return nil, fmt.Errorf("cannot get canonical JSON from file %v: %v", layoutKey, err)
-	}
-
-	l, err := ioutil.ReadFile(layout)
-	if err != nil {
-		return nil, fmt.Errorf("cannot get canonical JSON from file %v: %v", layout, err)
-	}
-
-	links := make(map[string][]byte)
-	files, err := ioutil.ReadDir(linkDir)
-	if err != nil {
-		return nil, fmt.Errorf("cannot read links directory %v: %v", linkDir, err)
-	}
-	for _, f := range files {
-		// TODO - Radu M
-		//
-		// robust check if file is actually a link
-		if !strings.Contains(f.Name(), ".link") {
-			continue
-		}
-		b, err := ioutil.ReadFile(filepath.Join(linkDir, f.Name()))
-		if err != nil {
-			return nil, fmt.Errorf("cannot get canonical JSON from file %v: %v", f.Name(), err)
-		}
-		links[f.Name()] = b
-	}
-
-	m := &Metadata{
-		Key:    k,
-		Layout: l,
-		Links:  links,
-	}
-
-	raw, err := canonicaljson.MarshalCanonical(m)
-	if err != nil {
-		return nil, fmt.Errorf("cannot encode in-toto metadata into canonical json %v: %v", m, err)
-	}
-
-	return canonicaljson.RawMessage(raw), nil
 }

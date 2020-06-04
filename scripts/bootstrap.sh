@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Remember the PWD.
 CWD=$(pwd)
 
@@ -16,9 +18,6 @@ fi
 
 # Restore PWD.
 cd $CWD
-
-# Build an image containing python-in-toto to verify bundles/images with.
-docker build --rm -t github.com/cnabio/signy/in-toto-container/verification:v1 -f Dockerfiles/in-toto-container.Dockerfile Dockerfiles/
 
 # We will sign and push this to our localhost Notary and Registry.
 echo "Pulling hello-world..."

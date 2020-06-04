@@ -13,57 +13,35 @@ import (
 	"github.com/cnabio/signy/pkg/cnab"
 )
 
-// VerifyCNABTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle
-func VerifyCNABTrust(ref, trustServer, tlscacert, trustDir, timeout string) error {
-	target, trustedSHA, err := GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout)
-	if err != nil {
-		return err
-	}
-	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
+func GetThickBundle(localFile string) ([]byte, error) {
+	log.Infof("Reading thick bundle on disk: %v", localFile)
+	return ioutil.ReadFile(localFile)
+}
 
-	log.Infof("Pulling bundle from registry: %v", ref)
+func GetThinBundle(ref string) ([]byte, error) {
+	log.Infof("Pulling thin bundle from registry: %v", ref)
 	bun, err := cnab.Pull(ref)
 	if err != nil {
-		return fmt.Errorf("cannot pull bundle: %v", err)
+		return nil, err
 	}
-	buf, err := json.MarshalCanonical(bun)
-	if err != nil {
-		return err
-	}
+	return json.MarshalCanonical(bun)
+}
 
-	err = verifyTargetSHAFromBytes(target, buf)
+// VerifyTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle
+func VerifyTrust(buf []byte, trustedSHA string) error {
+	err := verifyTargetSHAFromBytes(buf, trustedSHA)
 	if err == nil {
 		log.Infof("The SHA sums are equal: %v\n", trustedSHA)
 	}
-
 	return err
 }
 
-// VerifyFileTrust ensures the trust metadata for a given GUN matches the computed metadata of the local file
-func VerifyFileTrust(ref, localFile, trustServer, tlscacert, trustDir, timeout string) error {
-	target, trustedSHA, err := GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout)
-	if err != nil {
-		return err
-	}
-	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
-
-	buf, err := ioutil.ReadFile(localFile)
-	if err != nil {
-		return err
-	}
-
-	err = verifyTargetSHAFromBytes(target, buf)
-	if err == nil {
-		log.Infof("The SHA sums are equal: %v\n", trustedSHA)
-	}
-
-	return err
-}
-
-func verifyTargetSHAFromBytes(target *client.TargetWithRole, buf []byte) error {
-	trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
+func verifyTargetSHAFromBytes(buf []byte, trustedSHA string) error {
 	hasher := sha256.New()
-	hasher.Write(buf)
+	_, err := hasher.Write(buf)
+	if err != nil {
+		return err
+	}
 	computedSHA := hex.EncodeToString(hasher.Sum(nil))
 
 	log.Infof("Computed SHA: %v\n", computedSHA)
@@ -86,5 +64,7 @@ func GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout string) (*cl
 		return nil, "", err
 	}
 
-	return target, hex.EncodeToString(target.Hashes["sha256"]), nil
+	trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
+	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
+	return target, trustedSHA, nil
 }

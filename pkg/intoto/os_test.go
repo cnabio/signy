@@ -11,19 +11,15 @@ import (
 var testDir = "../../testdata/intoto"
 
 func TestVerify(t *testing.T) {
-	layout := filepath.Join(testDir, "demo.layout.template")
-	key := filepath.Join(testDir, "alice.pub")
-	links := testDir
-
-	err := Verify(layout, links, key)
+	err := verifyOnOS(testDir)
 	assert.NoError(t, err)
 
-	// the verification step geneates a file called untar.link
+	// the verification step generates a file called untar.link
 	os.Remove("untar.link")
 }
 
 func TestValidate(t *testing.T) {
-	layoutPath := filepath.Join(testDir, "demo.layout.template")
+	layoutPath := filepath.Join(testDir, "root.layout")
 
 	l, err := getLayout(layoutPath)
 	assert.NoError(t, err)
