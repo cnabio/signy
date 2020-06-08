@@ -3,7 +3,7 @@ ORG             := cnabio
 BINDIR          := $(CURDIR)/bin
 GOFLAGS         :=
 GOBUILDTAGS     := osusergo
-LDFLAGS         := -w -s -X github.com/cnabio/signy/pkg/docker.Tag=$(TAG)
+LDFLAGS         := -w -s -X github.com/cnabio/signy/pkg/docker.Tag=latest
 
 ifeq ($(OS),Windows_NT)
 	TARGET = $(PROJECT).exe
