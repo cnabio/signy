@@ -9,15 +9,6 @@ import (
 	"github.com/theupdateframework/notary/tuf/data"
 )
 
-// clearChangelist clears the notary staging changelist
-func clearChangeList(notaryRepo client.Repository) error {
-	cl, err := notaryRepo.GetChangelist()
-	if err != nil {
-		return err
-	}
-	return cl.Clear("")
-}
-
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
 func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeout string, custom *canonicaljson.RawMessage) (*client.Target, error) {
 	if err := EnsureTrustDir(trustDir); err != nil {
@@ -50,42 +41,17 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 	if err != nil {
 		return nil, fmt.Errorf("cannot clear change list: %v", err)
 	}
-
 	defer clearChangeList(repo)
 
-	if _, err = repo.ListTargets(); err != nil {
-		switch err.(type) {
-		case client.ErrRepoNotInitialized, client.ErrRepositoryNotExist:
-			// Reuse root key.
-			rootKeyIDs, err := importRootKey(rootKey, repo, getPassphraseRetriever())
-			if err != nil {
-				return nil, err
-			}
-
-			// NOTE: 2nd variadic argument is to indicate that snapshot is managed remotely.
-			// The impact of a timestamp + snapshot key compromise is not terrible:
-			// https://docs.docker.com/notary/service_architecture/#threat-model
-			if err = repo.Initialize(rootKeyIDs, data.CanonicalSnapshotRole); err != nil {
-				return nil, fmt.Errorf("cannot initialize repo: %v", err)
-			}
-
-			// Reuse targets key.
-			if err = reuseTargetsKey(repo); err != nil {
-				return nil, fmt.Errorf("cannot reuse targets keys: %v", err)
-			}
-
-		default:
-			return nil, fmt.Errorf("cannot list targets: %v", err)
-		}
+	err = reuseKeys(repo, rootKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot reuse keys: %v", err)
 	}
 
 	target, err := client.NewTarget(tag, file, custom)
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO - Radu M
-	// decide whether to allow actually passing roles as flags
 
 	// If roles is empty, we default to adding to targets
 	if err = repo.AddTarget(target, data.NewRoleList([]string{})...); err != nil {
@@ -94,4 +60,55 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 
 	err = repo.Publish()
 	return target, err
+}
+
+// reuse root and top-level targets keys
+func reuseKeys(repo client.Repository, rootKey string) error {
+	if _, err := repo.ListTargets(); err != nil {
+		switch err.(type) {
+		case client.ErrRepoNotInitialized, client.ErrRepositoryNotExist:
+			// Reuse root key.
+			rootKeyIDs, err := importRootKey(rootKey, repo, getPassphraseRetriever())
+			if err != nil {
+				return err
+			}
+
+			// NOTE: 2nd variadic argument is to indicate that snapshot is managed remotely.
+			// The impact of a timestamp + snapshot key compromise is not terrible:
+			// https://docs.docker.com/notary/service_architecture/#threat-model
+			if err = repo.Initialize(rootKeyIDs, data.CanonicalSnapshotRole); err != nil {
+				return fmt.Errorf("cannot initialize repo: %v", err)
+			}
+
+			// Reuse targets key.
+			if err = reuseTargetsKey(repo); err != nil {
+				return fmt.Errorf("cannot reuse %s keys: %v", data.CanonicalTargetsRole, err)
+			}
+
+			// Reuse targets/releases key.
+			releasesPublicKey, err := reuseReleasesKey(repo)
+			if err != nil {
+				return fmt.Errorf("cannot reuse %s keys: %v", releasesRoleName, err)
+			}
+
+			// Delegate to targets/releases.
+			err = delegateToReleases(repo, releasesPublicKey)
+			if err != nil {
+				return fmt.Errorf("cannot delegate to %s: %v", releasesRoleName, err)
+			}
+
+		default:
+			return fmt.Errorf("cannot list targets: %v", err)
+		}
+	}
+	return nil
+}
+
+// clearChangelist clears the notary staging changelist
+func clearChangeList(notaryRepo client.Repository) error {
+	cl, err := notaryRepo.GetChangelist()
+	if err != nil {
+		return err
+	}
+	return cl.Clear("")
 }

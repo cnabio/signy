@@ -13,10 +13,12 @@ import (
 
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/registry"
+	"github.com/theupdateframework/notary/tuf/data"
 )
 
 const (
-	dockerConfigDir = ".docker"
+	dockerConfigDir  = ".docker"
+	releasesRoleName = data.RoleName("targets/releases")
 )
 
 func DefaultTrustDir() string {

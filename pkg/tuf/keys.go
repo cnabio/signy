@@ -24,9 +24,9 @@ import (
 func getPassphraseRetriever() notary.PassRetriever {
 	baseRetriever := passphrase.PromptRetriever()
 	env := map[string]string{
-		"root":     os.Getenv("SIGNY_ROOT_PASSPHRASE"),
-		"targets":  os.Getenv("SIGNY_TARGETS_PASSPHRASE"),
-		"releases": os.Getenv("SIGNY_RELEASES_PASSPHRASE"),
+		"root":             os.Getenv("SIGNY_ROOT_PASSPHRASE"),
+		"targets":          os.Getenv("SIGNY_TARGETS_PASSPHRASE"),
+		"targets/releases": os.Getenv("SIGNY_RELEASES_PASSPHRASE"),
 	}
 
 	return func(keyName string, alias string, createNew bool, numAttempts int) (string, bool, error) {
@@ -39,11 +39,12 @@ func getPassphraseRetriever() notary.PassRetriever {
 
 // Attempt to read a role key from a file, and return it as a data.PrivateKey
 // If key is for the Root role, it must be encrypted
-func readKey(role data.RoleName, keyFilename string, retriever notary.PassRetriever) (data.PrivateKey, error) {
+func readPrivateKey(role data.RoleName, keyFilename string, retriever notary.PassRetriever) (data.PrivateKey, error) {
 	pemBytes, err := ioutil.ReadFile(keyFilename)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading input root key file: %v", err)
 	}
+
 	isEncrypted := true
 	if err = cryptoservice.CheckRootKeyIsEncrypted(pemBytes); err != nil {
 		if role == data.CanonicalRootRole {
@@ -51,6 +52,7 @@ func readKey(role data.RoleName, keyFilename string, retriever notary.PassRetrie
 		}
 		isEncrypted = false
 	}
+
 	var privKey data.PrivateKey
 	if isEncrypted {
 		privKey, _, err = trustmanager.GetPasswdDecryptBytes(retriever, pemBytes, "", data.CanonicalRootRole.String())
@@ -71,7 +73,7 @@ func importRootKey(rootKey string, nRepo client.Repository, retriever notary.Pas
 	var rootKeyList []string
 
 	if rootKey != "" {
-		privKey, err := readKey(data.CanonicalRootRole, rootKey, retriever)
+		privKey, err := readPrivateKey(data.CanonicalRootRole, rootKey, retriever)
 		if err != nil {
 			return nil, err
 		}
@@ -89,12 +91,30 @@ func importRootKey(rootKey string, nRepo client.Repository, retriever notary.Pas
 		// Chooses the first root key available, which is initialization specific
 		// but should return the HW one first.
 		rootKeyID := rootKeyList[0]
-		log.Debugf("Signy found root key, using: %s\n", rootKeyID)
-
+		log.Debugf("found root key: %s\n", rootKeyID)
 		return []string{rootKeyID}, nil
 	}
 
 	return []string{}, nil
+}
+
+// Try to reuse a single targets/releases key across repositories.
+func reuseReleasesKey(r client.Repository) (data.PublicKey, error) {
+	// Get all known targets keys.
+	cryptoService := r.GetCryptoService()
+	keyList := cryptoService.ListKeys(releasesRoleName)
+
+	// Try to extract a single targets/releases key we can reuse.
+	switch len(keyList) {
+	case 0:
+		log.Debugf("No %s key available, need to make one", releasesRoleName)
+		return cryptoService.Create(releasesRoleName, r.GetGUN(), data.ECDSAKey)
+	case 1:
+		log.Debugf("Nothing to do, only one %s key available", releasesRoleName)
+		return cryptoService.GetKey(keyList[0]), nil
+	default:
+		return nil, fmt.Errorf("there is more than one %s keys", releasesRoleName)
+	}
 }
 
 // Try to reuse a single targets key across repositories.
@@ -103,43 +123,39 @@ func importRootKey(rootKey string, nRepo client.Repository, retriever notary.Pas
 // more than one new, local targets key, and reusing any existing local targets key, just like the way Notary
 // reuses the root key.
 func reuseTargetsKey(r client.Repository) error {
-	var (
-		err                                error
-		thisTargetsKeyID, thatTargetsKeyID string
-	)
-
 	// Get all known targets keys.
-	targetsKeyList := r.GetCryptoService().ListKeys(data.CanonicalTargetsRole)
+	keyList := r.GetCryptoService().ListKeys(data.CanonicalTargetsRole)
+
 	// Try to extract a single targets key we can reuse.
-	switch len(targetsKeyList) {
+	switch len(keyList) {
 	case 0:
-		err = fmt.Errorf("no targets key despite having initialized a repo")
+		return fmt.Errorf("no targets key despite having initialized a repo")
 	case 1:
 		log.Debug("Nothing to do, only one targets key available")
+		return nil
 	case 2:
 		// First, we publish current changes to repository in order to list roles.
 		// FIXME: Find a find better way to list roles w/o publishing changes first.
-		publishErr := r.Publish()
-		if publishErr != nil {
-			err = publishErr
-			break
+		err := r.Publish()
+		if err != nil {
+			return err
 		}
 
 		// Get the current top-level roles.
-		roleWithSigs, listRolesErr := r.ListRoles()
-		if listRolesErr != nil {
-			err = listRolesErr
-			break
+		roleWithSigs, err := r.ListRoles()
+		if err != nil {
+			return err
 		}
 
 		// Get the current targets key.
 		// NOTE: We do not delete it, in case the user wants to keep it.
+		var thisKeyID string
 		for _, roleWithSig := range roleWithSigs {
 			role := roleWithSig.Role
 			if role.Name == data.CanonicalTargetsRole {
 				if len(role.KeyIDs) == 1 {
-					thisTargetsKeyID = role.KeyIDs[0]
-					log.Debugf("This targets keyid: %s", thisTargetsKeyID)
+					thisKeyID = role.KeyIDs[0]
+					log.Debugf("This targets keyid: %s", thisKeyID)
 				} else {
 					return fmt.Errorf("this targets role has more than 1 key")
 				}
@@ -147,19 +163,19 @@ func reuseTargetsKey(r client.Repository) error {
 		}
 
 		// Get and reuse the other targets key.
-		for _, keyID := range targetsKeyList {
-			if keyID != thisTargetsKeyID {
-				thatTargetsKeyID = keyID
+		var thatKeyID string
+		for _, keyID := range keyList {
+			if keyID != thisKeyID {
+				thatKeyID = keyID
 				break
 			}
 		}
-		log.Debugf("That targets keyID: %s", thatTargetsKeyID)
-		log.Debugf("Before rotating targets key from %s to %s", thisTargetsKeyID, thatTargetsKeyID)
-		err = r.RotateKey(data.CanonicalTargetsRole, false, []string{thatTargetsKeyID})
+		log.Debugf("That targets keyID: %s", thatKeyID)
+		log.Debugf("Before rotating targets key from %s to %s", thisKeyID, thatKeyID)
+		err = r.RotateKey(data.CanonicalTargetsRole, false, []string{thatKeyID})
 		log.Debugf("After targets key rotation")
+		return err
 	default:
-		err = fmt.Errorf("there are more than 2 targets keys")
+		return fmt.Errorf("there are more than two targets keys")
 	}
-
-	return err
 }
