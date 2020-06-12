@@ -21,6 +21,7 @@ const (
 	releasesRoleName = data.RoleName("targets/releases")
 )
 
+// DefaultTrustDir returns where the Signy trust data lives
 func DefaultTrustDir() string {
 	homeEnvPath := os.Getenv("HOME")
 	if homeEnvPath == "" && runtime.GOOS == "windows" {
@@ -30,6 +31,7 @@ func DefaultTrustDir() string {
 	return filepath.Join(homeEnvPath, ".signy")
 }
 
+// DefaultDockerCfgDir returns where the Docker config directory lives
 func DefaultDockerCfgDir() string {
 	homeEnvPath := os.Getenv("HOME")
 	if homeEnvPath == "" && runtime.GOOS == "windows" {
@@ -39,9 +41,21 @@ func DefaultDockerCfgDir() string {
 	return filepath.Join(homeEnvPath, dockerConfigDir)
 }
 
-// ensures the trust directory exists
+// EnsureTrustDir ensures the trust directory exists
 func EnsureTrustDir(trustDir string) error {
 	return os.MkdirAll(trustDir, 0700)
+}
+
+func getGUN(name string) (string, error) {
+	r, err := reference.ParseNormalizedNamed(name)
+	if err != nil {
+		return "", err
+	}
+	repo, err := registry.ParseRepositoryInfo(r)
+	if err != nil {
+		return "", err
+	}
+	return repo.Name.Name(), nil
 }
 
 func getRepoAndTag(name string) (*registry.RepositoryInfo, string, error) {

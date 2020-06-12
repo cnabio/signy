@@ -15,19 +15,19 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
 
-	repoInfo, tag, err := getRepoAndTag(ref)
+	gun, err := getGUN(ref)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get repo and tag from reference: %v", err)
+		return nil, fmt.Errorf("cannot get GUN reference: %v", err)
 	}
 
-	transport, err := makeTransport(trustServer, repoInfo.Name.Name(), tlscacert, timeout)
+	transport, err := makeTransport(trustServer, gun, tlscacert, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("cannot make transport: %v", err)
 	}
 
 	repo, err := client.NewFileCachedRepository(
 		trustDir,
-		data.GUN(repoInfo.Name.Name()),
+		data.GUN(gun),
 		trustServer,
 		transport,
 		getPassphraseRetriever(),
@@ -48,18 +48,28 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 		return nil, fmt.Errorf("cannot reuse keys: %v", err)
 	}
 
-	target, err := client.NewTarget(tag, file, custom)
+	// NOTE: We use the full reference for the target filename of the bundle.
+	target, err := client.NewTarget(ref, file, custom)
 	if err != nil {
 		return nil, err
 	}
 
-	// If roles is empty, we default to adding to targets
-	if err = repo.AddTarget(target, data.NewRoleList([]string{})...); err != nil {
+	// NOTE: And we add the bundle to the "targets/releases" instead of the top-level "targets" role.
+	if err = repo.AddTarget(target, releasesRoleName); err != nil {
 		return nil, err
 	}
 
 	err = repo.Publish()
 	return target, err
+}
+
+// clearChangelist clears the notary staging changelist
+func clearChangeList(notaryRepo client.Repository) error {
+	cl, err := notaryRepo.GetChangelist()
+	if err != nil {
+		return err
+	}
+	return cl.Clear("")
 }
 
 // reuse root and top-level targets keys
@@ -102,13 +112,4 @@ func reuseKeys(repo client.Repository, rootKey string) error {
 		}
 	}
 	return nil
-}
-
-// clearChangelist clears the notary staging changelist
-func clearChangeList(notaryRepo client.Repository) error {
-	cl, err := notaryRepo.GetChangelist()
-	if err != nil {
-		return err
-	}
-	return cl.Clear("")
 }
