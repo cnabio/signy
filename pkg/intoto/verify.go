@@ -13,10 +13,13 @@ import (
 )
 
 const (
+	// BundleFilename is the name written to disk during verification
 	BundleFilename = "bundle.json"
-	ReadOnlyMask   = 0400
+	// ReadOnlyMask is applied to files written to disk for verification
+	ReadOnlyMask = 0400
 )
 
+// VerifyOnOS verifies a bundle directly on the OS
 func VerifyOnOS(target *client.TargetWithRole, bundle []byte) error {
 	verificationDir, err := getVerificationDir(target, bundle)
 	if err != nil {
@@ -29,6 +32,7 @@ func VerifyOnOS(target *client.TargetWithRole, bundle []byte) error {
 	return verifyOnOS(verificationDir)
 }
 
+// VerifyInContainer verifies a bundle within a container
 func VerifyInContainer(target *client.TargetWithRole, bundle []byte, verificationImage string, logLevel string) error {
 	verificationDir, err := getVerificationDir(target, bundle)
 	if err != nil {
@@ -42,6 +46,7 @@ func VerifyInContainer(target *client.TargetWithRole, bundle []byte, verificatio
 }
 
 func getVerificationDir(target *client.TargetWithRole, bundle []byte) (string, error) {
+	// FIXME
 	m := &Metadata{}
 	err := json.Unmarshal(*target.Custom, m)
 	if err != nil {
@@ -53,6 +58,7 @@ func getVerificationDir(target *client.TargetWithRole, bundle []byte) (string, e
 		return "", err
 	}
 
+	// FIXME
 	log.Infof("Writing in-toto metadata files into %v", verificationDir)
 	err = WriteMetadataFiles(m, verificationDir)
 	if err != nil {

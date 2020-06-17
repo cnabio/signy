@@ -11,11 +11,12 @@ import (
 	"github.com/theupdateframework/notary/client"
 
 	"github.com/cnabio/signy/pkg/cnab"
+	"github.com/cnabio/signy/pkg/docker"
 )
 
 // GetTargetAndSHA returns the target with roles and the SHA256 of the target file
 func GetTargetAndSHA(targetName, trustServer, tlscacert, trustDir, timeout string) (*client.TargetWithRole, string, error) {
-	gun, err := getGUN(targetName)
+	gun, err := docker.GetGUN(targetName)
 	if err != nil {
 		return nil, "", fmt.Errorf("cannot get repo and tag from reference: %v", err)
 	}

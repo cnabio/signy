@@ -32,6 +32,19 @@ const (
 	workingDir = "/in-toto" // Where we expect to copy in-toto artifacts to
 )
 
+// GetGUN returns the Globally Unique Name for a reference image name
+func GetGUN(name string) (string, error) {
+	r, err := reference.ParseNormalizedNamed(name)
+	if err != nil {
+		return "", err
+	}
+	repo, err := registry.ParseRepositoryInfo(r)
+	if err != nil {
+		return "", err
+	}
+	return repo.Name.Name(), nil
+}
+
 // Run will start a container, copy all In-Toto metadata in /in-toto
 // then run in-toto-verification
 func Run(verificationImage, verificationDir, logLevel string) error {

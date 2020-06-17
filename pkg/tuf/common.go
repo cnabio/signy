@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/docker/distribution/reference"
-	"github.com/docker/docker/registry"
 	"github.com/theupdateframework/notary/tuf/data"
 )
 
@@ -44,40 +42,4 @@ func DefaultDockerCfgDir() string {
 // EnsureTrustDir ensures the trust directory exists
 func EnsureTrustDir(trustDir string) error {
 	return os.MkdirAll(trustDir, 0700)
-}
-
-func getGUN(name string) (string, error) {
-	r, err := reference.ParseNormalizedNamed(name)
-	if err != nil {
-		return "", err
-	}
-	repo, err := registry.ParseRepositoryInfo(r)
-	if err != nil {
-		return "", err
-	}
-	return repo.Name.Name(), nil
-}
-
-func getRepoAndTag(name string) (*registry.RepositoryInfo, string, error) {
-	r, err := reference.ParseNormalizedNamed(name)
-	if err != nil {
-		return nil, "", err
-	}
-	repo, err := registry.ParseRepositoryInfo(r)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return repo, getTag(r), nil
-}
-
-func getTag(ref reference.Named) string {
-	switch x := ref.(type) {
-	case reference.Canonical, reference.Digested:
-		return ""
-	case reference.NamedTagged:
-		return x.Tag()
-	default:
-		return ""
-	}
 }

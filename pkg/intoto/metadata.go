@@ -9,89 +9,148 @@ import (
 	canonicaljson "github.com/docker/go/canonical/json"
 )
 
-// Metadata represents the In-Toto metadata stored in TUF.
-// All fields are represented as []byte in order to be stored in the Custom field for TUF metadata.
+// Metadata points to root layout, its public keys, and/or links
 type Metadata struct {
-	// TODO: remove this once the TUF targets key is used to sign the root layout
-	Key    []byte            `json:"key"`
-	Layout []byte            `json:"layout"`
-	Links  map[string][]byte `json:"links"`
+	Data       []byte   `json:"data"`
+	PublicKeys []string `json:"public-keys"` // filenames
+	Links      []string `json:"links"`       // filenames
+}
+
+// Custom is a generic structure that contains in-toto Metadata
+type Custom struct {
+	InToto Metadata `json:"in-toto"`
+}
+
+// PublicKeys is a map from the GUN-qualified filename
+// (e.g., "example.com/example-org/example-bundle/in-toto-pubkeys/keyid.pub")
+// to a Custom struct
+type PublicKeys map[string]Custom
+
+// RootLayout maps a GUN-qualified filename
+// (e.g., "example.com/example-org/example-bundle/in-toto-metadata/root.layout")
+// to a Custom struct
+type RootLayout struct {
+	Filename string
+	Custom   Custom
+}
+
+// Links is a map from the GUN-qualified filename
+// (e.g., "example.com/example-org/example-bundle/in-toto-metadata/DIGEST/step.link")
+// to a Custom struct
+type Links map[string]Custom
+
+// GetRawMessage transforms a Custom struct into a raw Canonical JSON message
+func (custom *Custom) GetRawMessage() (canonicaljson.RawMessage, error) {
+	marshalled, err := canonicaljson.MarshalCanonical(custom)
+	if err != nil {
+		return nil, fmt.Errorf("cannot encode custom metadata into canonical json: %v", err)
+	}
+	return canonicaljson.RawMessage(marshalled), nil
+}
+
+// GetPublicKeys reads public keys off disk into a PublicKeys map
+func GetPublicKeys(gun string, filenames ...string) (PublicKeys, error) {
+	publicKeys := make(PublicKeys)
+
+	for _, filename := range filenames {
+		if !strings.HasSuffix(filename, ".pub") {
+			return nil, fmt.Errorf("%s does not have a .pub suffix", filename)
+		}
+
+		data, err := readFile(filename)
+		if err != nil {
+			return nil, err
+		}
+
+		metadata := Metadata{Data: data}
+		custom := Custom{InToto: metadata}
+		filename = gun + "/in-toto-pubkeys/" + filename
+		publicKeys[filename] = custom
+	}
+
+	return publicKeys, nil
+}
+
+// GetRootLayout reads root layout off disk into a RootLayout struct
+func GetRootLayout(gun string, filename string, publicKeys PublicKeys) (RootLayout, error) {
+	var rootLayout RootLayout
+
+	if !strings.HasSuffix(filename, ".layout") {
+		return rootLayout, fmt.Errorf("%s does not have a .layout suffix", filename)
+	}
+
+	data, err := readFile(filename)
+	if err != nil {
+		return rootLayout, err
+	}
+
+	filenames := make([]string, len(publicKeys))
+	for filename := range publicKeys {
+		filenames = append(filenames, filename)
+	}
+
+	metadata := Metadata{Data: data, PublicKeys: filenames}
+	custom := Custom{InToto: metadata}
+	filename = gun + "/in-toto-metadata/" + filename
+	rootLayout.Filename = filename
+	rootLayout.Custom = custom
+	return rootLayout, nil
+}
+
+// GetLinks reads link metadata off disk into a Links struct
+func GetLinks(gun string, dir string) (Links, error) {
+	fileinfos, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read links directory %v: %v", dir, err)
+	}
+
+	// NOTE: We assume that the base directory used to hold the links are unique
+	// (e.g., identified by the digest of the first link metadata file corresponding to the first step).
+	// This is so that different versions of links corresponding to the same root layout can be safely isolated from each other.
+	// TODO: If they are not unique, should we raise an error later when adding them to the TUF targets metadata?
+	digest := filepath.Base(dir)
+	links := make(Links)
+	for _, fileinfo := range fileinfos {
+		filename := fileinfo.Name()
+		if !strings.Contains(filename, ".link") {
+			return nil, fmt.Errorf("%s does not have a .link suffix", filename)
+		}
+
+		data, err := readFile(filepath.Join(dir, filename))
+		if err != nil {
+			return nil, err
+		}
+
+		metadata := Metadata{Data: data}
+		custom := Custom{InToto: metadata}
+		filename = gun + "/in-toto-metadata/" + digest + "/" + filename
+		links[filename] = custom
+	}
+
+	return links, nil
+}
+
+// GetBundleCustom returns a Custom struct pointing to a list of root layout and links
+func GetBundleCustom(rootLayout RootLayout, links Links) Custom {
+	filenames := make([]string, len(links)+1)
+	filenames = append(filenames, rootLayout.Filename)
+	for filename := range links {
+		filenames = append(filenames, filename)
+	}
+	metadata := Metadata{Links: filenames}
+	return Custom{InToto: metadata}
 }
 
 // WriteMetadataFiles writes the content of a metadata object into files in a directory
+// TODO
 func WriteMetadataFiles(m *Metadata, dir string) error {
-	abs, err := filepath.Abs(dir)
-	if err != nil {
-		return err
-	}
-
-	//FIXME: no need to actually write filename.
-	err = ioutil.WriteFile(filepath.Join(abs, "root.layout"), m.Layout, ReadOnlyMask)
-	if err != nil {
-		return err
-	}
-
-	//FIXME: no need to actually write filenames.
-	err = ioutil.WriteFile(filepath.Join(abs, "root.layout.pub"), m.Key, ReadOnlyMask)
-	if err != nil {
-		return err
-	}
-
-	for n, c := range m.Links {
-		err = ioutil.WriteFile(filepath.Join(abs, n), c, ReadOnlyMask)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return fmt.Errorf("not implemented")
 }
 
-// GetMetadataRawMessage takes In-Toto metadata and returns a canonical RawMessage
-// that can be stored in the TUF targets custom field.
-//
-// TODO: layout signing key should not be passed by the library.
-// Layouts should be signed with the targets key used to sign the TUF collection.
-func GetMetadataRawMessage(layout string, linkDir string, layoutKey string) (canonicaljson.RawMessage, error) {
-	k, err := ioutil.ReadFile(layoutKey)
+func readFile(filename string) ([]byte, error) {
+	bytes, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("cannot get canonical JSON from file %v: %v", layoutKey, err)
+		return nil, err
 	}
-
-	l, err := ioutil.ReadFile(layout)
-	if err != nil {
-		return nil, fmt.Errorf("cannot get canonical JSON from file %v: %v", layout, err)
-	}
-
-	links := make(map[string][]byte)
-	files, err := ioutil.ReadDir(linkDir)
-	if err != nil {
-		return nil, fmt.Errorf("cannot read links directory %v: %v", linkDir, err)
-	}
-	for _, f := range files {
-		// TODO - Radu M
-		//
-		// robust check if file is actually a link
-		if !strings.Contains(f.Name(), ".link") {
-			continue
-		}
-		b, err := ioutil.ReadFile(filepath.Join(linkDir, f.Name()))
-		if err != nil {
-			return nil, fmt.Errorf("cannot get canonical JSON from file %v: %v", f.Name(), err)
-		}
-		links[f.Name()] = b
-	}
-
-	m := &Metadata{
-		Key:    k,
-		Layout: l,
-		Links:  links,
-	}
-
-	raw, err := canonicaljson.MarshalCanonical(m)
-	if err != nil {
-		return nil, fmt.Errorf("cannot encode in-toto metadata into canonical json %v: %v", m, err)
-	}
-
-	return canonicaljson.RawMessage(raw), nil
+	return bytes, nil
 }
