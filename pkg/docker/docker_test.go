@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testDir = "../../testdata/intoto"
+var testDir = "../../testdata/intoto/minimal"
 
 func TestRun(t *testing.T) {
 	// NOTE: Tag will be empty since we cannot inject build-time variables during testing.
