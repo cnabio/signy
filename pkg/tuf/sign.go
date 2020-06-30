@@ -185,7 +185,7 @@ func reuseKeys(repo client.Repository, rootKey string) error {
 			}
 
 		default:
-			return fmt.Errorf("cannot list targets: %v", err)
+			return fmt.Errorf("cannot list targets while reusing keys: %v", err)
 		}
 	}
 	return nil

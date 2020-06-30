@@ -1,9 +1,3 @@
-// Most of the helper functions are adapted from github.com/theupdateframework/notary
-//
-// Figure out the proper way of making sure we are respecting the licensing from Notary
-// While we are also vendoring Notary directly (see LICENSE in vendor/github.com/theupdateframework/notary/LICENSE),
-// copying unexported functions could fall under different licensing, so we need to make sure.
-
 package tuf
 
 import (

@@ -12,13 +12,13 @@ import (
 // Metadata points to root layout, its public keys, and/or links
 type Metadata struct {
 	Data       []byte   `json:"data"`
-	PublicKeys []string `json:"public-keys"` // filenames
-	Links      []string `json:"links"`       // filenames
+	PublicKeys []string `json:"pubkeys"` // filenames
+	Links      []string `json:"links"`   // filenames
 }
 
 // Custom is a generic structure that contains in-toto Metadata
 type Custom struct {
-	InToto Metadata `json:"in-toto"`
+	InToto Metadata `json:"intoto"`
 }
 
 // PublicKeys is a map from the GUN-qualified filename
