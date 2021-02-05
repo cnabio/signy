@@ -2,6 +2,7 @@ package intoto
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 var testDir = "../../testdata/intoto"
 
 func TestVerify(t *testing.T) {
-	err := verifyOnOS(testDir)
+	err := verifyOnOS(path.Join(testDir, "minimal"))
 	assert.NoError(t, err)
 
 	// the verification step generates a file called untar.link
@@ -19,7 +20,7 @@ func TestVerify(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	layoutPath := filepath.Join(testDir, "root.layout")
+	layoutPath := filepath.Join(testDir, "minimal", "root.layout")
 
 	l, err := getLayout(layoutPath)
 	assert.NoError(t, err)
@@ -29,7 +30,7 @@ func TestValidate(t *testing.T) {
 }
 
 func TestValidateMalformed(t *testing.T) {
-	layoutPath := filepath.Join(testDir, "malformed.template")
+	layoutPath := filepath.Join(testDir, "malformed.root.layout")
 
 	// we can load the file and unmarshal a layout
 	l, err := getLayout(layoutPath)

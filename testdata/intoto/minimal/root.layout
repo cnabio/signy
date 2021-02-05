@@ -1,0 +1,120 @@
+{
+ "signatures": [
+  {
+   "keyid": "737c25cc5ed977df2979fe029909d2d36b96adb4a65b9687fb8d150eaa29a4d8",
+   "sig": "bc4a54ac4e7b52d6dfd36e8e0ca1b78e4f4e7d0c2b388ddd6cc738f599fc6d32b52fdbf2e2109e17debfa1a6d37969f217fb9e6f9622f980d33ca67b722ab7ef804497e8f9f070e1f4d338fb34adeb009f966f3aa42ba95d94ec8852c3b7c0399469552a99e5ddbc97368f587600468aa321887a92d7b45eba06a5a4bb932918987cbfe2ee41f88eeb614d35fbc84111c82d58faa2574a2f7b0861ab2652ce23f2a013b06e487fdf29d17ce50d1e6daace0d36657c1b292a6c3065efe6071fd24267137859e49456d69dc6cd344fd4f44a98e6a796c2ac49dbde38458d7f04ddfde1a6c64df634aece3620768828433d3f2f0b381e2956226036cdb68d94c6bdd044ca4732bb136addc037ceb43b7a2d8fa2c536a326ae8304067daa3e59e979ac0f1a079b14c66de5afb6f8d50a241c366d4fccd07dc792713e5b3e2a6f3870971c8aace1b2137341168693135c75e3d341eaa39d33cee4b83336c732fd3c305654b9c9f794d5839464455a3e9cc3a6ca4dc2ca0064d668ef392184f5933ed1"
+  }
+ ],
+ "signed": {
+  "_type": "layout",
+  "expires": "2021-05-12T11:15:05Z",
+  "inspect": [],
+  "keys": {
+   "2d2e5437de978b123ed8a50692cdb38c198ced0f1f356398abe9dd5206e890e2": {
+    "keyid": "2d2e5437de978b123ed8a50692cdb38c198ced0f1f356398abe9dd5206e890e2",
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keytype": "rsa",
+    "keyval": {
+     "private": "",
+     "public": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA4X062OOJPtd//g8acQ07\n+3xnCMCsQkMkOhJlaCWkxCFqSI8bUQrzRg1jfpCRCqzhEscTy/Vw/xWNvhgGOzcc\nYyCpnwDcr3CK3G58lVz2mnSyAW9PCOGvwgLfKMC7Z99q0tLRa3YYqzrajgYsL9D2\nPh+4DrlbAADfQIok7MkkjBqvKsFptr6N+KsB3pkQyGZUYAMdUUiQU8BV2oWNfJQo\n0PHW5fi5hfBCUGzDQB9U22fhD3I6sgKVfA+948mo+Y9QRp53WvmjR47xb5KjNJR8\niIq8htwXIe7JCJxcyEh7hjKE5E6Qm9OhN2e99uta9XiIX1hIqSdh+BcRuBb1SbJD\nX3OBqqZHtUJ9hiNLz+PmlMwLS+02sqIQud4Vhjfy83KnfOoZ0PRU9sUSQDDe/wnK\nC7PWwCfyBto7wf9EWOrRjlG/DwIPiRsxrZ2XhHJu3x4jjXjrkT6MIPWZESJvonZM\n5XIekFjaYt/mnPybuwMZCulAwQZ7ucJqf9zJUFhRYgZRAgMBAAE=\n-----END PUBLIC KEY-----"
+    },
+    "scheme": "rsassa-pss-sha256"
+   },
+   "dd035ca2388fffa593a9f0cb76f3ece27fe45560da0a5f93f5f404da2faac745": {
+    "keyid": "dd035ca2388fffa593a9f0cb76f3ece27fe45560da0a5f93f5f404da2faac745",
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keytype": "rsa",
+    "keyval": {
+     "private": "",
+     "public": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAqxqOAKWUWeiEBNtH1Nx2\n/8IKsSpbxy9NoTT31uTVK57oX0EomrBuCY4Ec6kcBWDPcqp6Z+2Z9baVzRB08SzO\nIJ3tGsTTdmJaFXFXjrDix/AioNmpCFh0ditOYoxUFu+skYV7PoHQ3BH7A5m2YxdH\n+KiLh2ccCvNnL/Wdio/6hwyVp4lZMFgQdhi7ba5EzuzwLt6dkB+9Fle2PMgeF+od\n/Ly7oXXaUi5lbPNLzf4Dkhr02qeKLFap35hBqXjqcx68vOfjuYFWwFaHmkCPjDpf\nTaLbPnDtXVWM8HzHdb4lVrZCpwpj859/QuDGb+uJyto3BsSHMli2v5e9QKcxtOzn\n6c5YtQkfL7u/n/vM3WuMsq78mFLoBNzHWrEsKp1ZKtBQDXfKDaW2io8BiWlREseh\nbk9ekBEvh8BmjBPS7A62z389kjUKZYhfaRSsaLGkUv0CnRCnuEQxCHpIUztHGiRx\nNpWz3dgp3t6+f/ZNC+ro8+FoHDGzEHX42oxD25E2H16BAgMBAAE=\n-----END PUBLIC KEY-----"
+    },
+    "scheme": "rsassa-pss-sha256"
+   }
+  },
+  "readme": "",
+  "steps": [
+   {
+    "_type": "step",
+    "expected_command": [],
+    "expected_materials": [
+     [
+      "DISALLOW",
+      "*"
+     ]
+    ],
+    "expected_products": [
+     [
+      "CREATE",
+      "cnab+json:*/bundle.json$*"
+     ],
+     [
+      "DISALLOW",
+      "*"
+     ]
+    ],
+    "name": "developer",
+    "pubkeys": [
+     "2d2e5437de978b123ed8a50692cdb38c198ced0f1f356398abe9dd5206e890e2"
+    ],
+    "threshold": 1
+   },
+   {
+    "_type": "step",
+    "expected_command": [
+     "./do-machine-stuff"
+    ],
+    "expected_materials": [
+     [
+      "MATCH",
+      "cnab+json:*/bundle.json$*",
+      "WITH",
+      "PRODUCTS",
+      "FROM",
+      "developer"
+     ],
+     [
+      "DISALLOW",
+      "*"
+     ]
+    ],
+    "expected_products": [
+     [
+      "MODIFY",
+      "cnab+json:*/bundle.json$/images/*/contentDigest"
+     ],
+     [
+      "MODIFY",
+      "cnab+json:*/bundle.json$/images/*/description"
+     ],
+     [
+      "MODIFY",
+      "cnab+json:*/bundle.json$/invocationImages/*/contentDigest"
+     ],
+     [
+      "MATCH",
+      "cnab+json:*/bundle.json$*",
+      "WITH",
+      "MATERIALS",
+      "FROM",
+      "machine"
+     ],
+     [
+      "DISALLOW",
+      "*"
+     ]
+    ],
+    "name": "machine",
+    "pubkeys": [
+     "dd035ca2388fffa593a9f0cb76f3ece27fe45560da0a5f93f5f404da2faac745"
+    ],
+    "threshold": 1
+   }
+  ]
+ }
+}

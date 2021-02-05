@@ -1,14 +1,13 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
 
-	canonicaljson "github.com/docker/go/canonical/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/cnabio/signy/pkg/cnab"
+	"github.com/cnabio/signy/pkg/docker"
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
 )
@@ -89,28 +88,47 @@ INFO[0001] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9e
 }
 
 func (s *signCmd) run() error {
-	var cm *canonicaljson.RawMessage
+	var publicKeys intoto.PublicKeys
+	var rootLayout intoto.RootLayout
+	var links intoto.Links
+	var bundleCustom intoto.Custom
+
+	gun, err := docker.GetGUN(s.ref)
+	if err != nil {
+		return fmt.Errorf("cannot initialize GUN from %s: %v", s.ref, err)
+	}
+
 	if s.intoto {
 		if s.layout == "" || s.layoutKey == "" || s.linkDir == "" {
 			return fmt.Errorf("required in-toto metadata not found")
 		}
 		log.Infof("Adding In-Toto layout and links metadata to TUF")
+
 		err := intoto.ValidateFromPath(s.layout)
 		if err != nil {
 			return fmt.Errorf("validation for in-toto metadata failed: %v", err)
 		}
-		custom, err := intoto.GetMetadataRawMessage(s.layout, s.linkDir, s.layoutKey)
+
+		publicKeys, err = intoto.GetPublicKeys(gun, s.layoutKey)
 		if err != nil {
-			return fmt.Errorf("cannot get metadata message: %v", err)
+			return fmt.Errorf("cannot read public keys: %v", err)
 		}
-		// TODO: Radu M
-		// Refactor GetMatedataRawMessage to return a pointer to a raw message
-		cm = &custom
+
+		rootLayout, err = intoto.GetRootLayout(gun, s.layout, publicKeys)
+		if err != nil {
+			return fmt.Errorf("cannot read root layout: %v", err)
+		}
+
+		links, err = intoto.GetLinks(gun, s.linkDir)
+		if err != nil {
+			return fmt.Errorf("cannot read links: %v", err)
+		}
+
+		bundleCustom = intoto.GetBundleCustom(rootLayout, links)
 	}
 
 	// NOTE: We first push to the Registry, and then Notary. This is so that if we modify the bundle locally,
 	// we will not invalidate its signature by first pushing to Notary, and then the Registry.
-
 	// We push only thin bundles to the Registry.
 	if !s.thick {
 		if err := cnab.Push(s.file, s.ref); err != nil {
@@ -118,11 +136,11 @@ func (s *signCmd) run() error {
 		}
 	}
 
-	target, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, timeout, cm)
+	bundleDigest, err := tuf.SignAndPublish(trustDir, trustServer, s.ref, s.file, tlscacert, s.rootKey, timeout, rootLayout, publicKeys, links, bundleCustom)
 	if err != nil {
 		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
 
-	log.Infof("Pushed trust data for %v: %v\n", s.ref, hex.EncodeToString(target.Hashes["sha256"]))
+	log.Infof("Pushed trust data for %v: %v\n", s.ref, bundleDigest)
 	return nil
 }

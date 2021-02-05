@@ -1,0 +1,271 @@
+{
+ "signatures": [
+  {
+   "keyid": "dd035ca2388fffa593a9f0cb76f3ece27fe45560da0a5f93f5f404da2faac745",
+   "sig": "20657c441605117736e843ab4ea51a0d32e07404fea0300c1259a3a6756ebe21c17dcc8aa442ad525c46a520c4e0568e0e920fcf0f2a943248451e7d216d2f62c3668f461e814951ecab7e68fcdec050744bdd4fbc20fd5b3e211e8f535ae58e344375b0a44290c640ba83ca6bfe404acf12c3945650a551411076f18c567d190900452e3191f4a8bfe7203237db9b349b82ad0dc007770a61dbf20a657d62d4549da015f060ab6c875e980720b0dc26d49d17f488e1b5b946f2cf008d0c9328161821368c5935ced367add4fbcea2a22a8ec6495153ee186bffbb45ffeec6e6ef14de2af1686e4c8b759af883abbe0651bdbd43cd08d37903af98a702fc1a2ef85c5dd5f51572f84cd120ff6d6b91b740bd8888e9365ebf6c3e883f9fa3cb5635ec1ee6f1ac34896b79a41bbc96b4a689b43b22fc81ca6ed9e8386251d696dd1dfc50d52494034b74016e6517c5a3e5e3f435b5d878f31f383e75f8253ad69e87f51fd37e5f039e88a9a22456c48a0d92dbc28e02dabf581b0a6146efd93601"
+  }
+ ],
+ "signed": {
+  "_type": "link",
+  "byproducts": {
+   "return-value": 0,
+   "stderr": "",
+   "stdout": ""
+  },
+  "command": [
+   "./do-machine-stuff"
+  ],
+  "environment": {},
+  "materials": {
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/credentials/hostkey/env": {
+    "sha256": "205c6e161cd52c8a5e28ac1a14a70ece07886438418ef1ed7ff431a3c59c55c2"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/credentials/hostkey/path": {
+    "sha256": "ea4278fd99a3cc839efd8d8675c2b754a6e556e0cd79e2dc10df03e9be071a56"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/custom/com.example.backup-preferences/frequency": {
+    "sha256": "fa6a92cf80cf218ed717b3cc3a405ffda3fdf6a983d72fed1bdd113622fea03d"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/custom/com.example.duffle-bag/icon": {
+    "sha256": "317d5a9514203bd1e19b80d39c846106513c7d20bd63271e8dbdb4821bff63b1"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/custom/com.example.duffle-bag/iconType": {
+    "sha256": "2775d1b05dce8419e4bab67f17fb5ed87eb0ca5b30232a04de1d574b99558200"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/default": {
+    "sha256": "48449a14a4ff7d79bb7a1b6f3d488eba397c36ef25634c111b49baf362511afc"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/maximum": {
+    "sha256": "205e7b780de08f42eda9fbf1715507758afd1f2eb499ffc6d0a352f904ee72f1"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/minimum": {
+    "sha256": "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/type": {
+    "sha256": "bb894e256c101d183cfd51432eebb3feb183cf155da5994b19a45406a3e24aac"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/port/maximum": {
+    "sha256": "f2f89ede8e7d4b3d2243dea1ca96b8ece56f793811d9708b4a0181bf81a50011"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/port/minimum": {
+    "sha256": "e39eef82f61b21e2e7f762fcc4307358f165757f2e77ec855d6992f7e0191932"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/port/type": {
+    "sha256": "bb894e256c101d183cfd51432eebb3feb183cf155da5994b19a45406a3e24aac"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/string/type": {
+    "sha256": "e9e5c1c9e4f6277339d1bcde0733a59bd42f8731f449da6dc13010a916930d48"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/contentEncoding": {
+    "sha256": "cb65d001ead1184d17391b55d1e96be555a573d9254cac717104f5d9d97e817c"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/contentMediaType": {
+    "sha256": "fc395c0b2477371951c95b71625d3919c73980dbb24aeca496578fc86a904add"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/type": {
+    "sha256": "e9e5c1c9e4f6277339d1bcde0733a59bd42f8731f449da6dc13010a916930d48"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/writeOnly": {
+    "sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/description": {
+    "sha256": "12ccf5980e26a71d58ac3b877b24f82fdaede3e01446038585b5b201d4b83c55"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/images/my-microservice/contentDigest": {
+    "sha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/images/my-microservice/description": {
+    "sha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/images/my-microservice/image": {
+    "sha256": "be56793296fdb27458fd80666e5dcd1af52dd298760097ed7e73944e70e05118"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/invocationImages/[0]/contentDigest": {
+    "sha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/invocationImages/[0]/image": {
+    "sha256": "d33274172ff3405c8cbf2ebc6cbe2f3d5904a0d53d5521d0aa6a390124e51703"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/invocationImages/[0]/imageType": {
+    "sha256": "f320b810ea61ce6405c478a1a67befdcc117a307e62f17deb2417be2f98b1864"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/maintainers/[0]/email": {
+    "sha256": "ea6b0d7bd10c06cbda2212bed77c5b2f9c0ef7b218afaf8e013f4466ba9f2ad1"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/maintainers/[0]/name": {
+    "sha256": "6682c39fd22bf39169f435916402584970df9a4d6ed72fc7ab7db46dca57d3e4"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/maintainers/[0]/url": {
+    "sha256": "5775c078c67ebad469f37e1d888f3084804a19ce7511c28c74c54e8232a51bdb"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/name": {
+    "sha256": "7b91cf1e312a84544a3d5f82ce965daf5620579a4a5e7d37b90829238a2f1055"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/clientCert/definition": {
+    "sha256": "157c4a9d3e97adcdd2028934f7c21db802f1c90d2193ba902fb9cc17fd713402"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/clientCert/path": {
+    "sha256": "2c66367f304e04df32081f665b5e106d4835b8544b7999fbe5bc73cd7d16b94c"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/applyTo": {
+    "sha256": "2594d48ff5c9c3577770805617147fe8b06d206b22baa806c3fd21f352acd183"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/definition": {
+    "sha256": "e9e5c1c9e4f6277339d1bcde0733a59bd42f8731f449da6dc13010a916930d48"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/description": {
+    "sha256": "da192c9f51c6dc131efe1418a1a408bbef863fd264cc488db48f947bb955efb4"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/path": {
+    "sha256": "fcc9b2b4e2eb66597d77def766e3ade74c37ff8f830bd0808303345a5ec80761"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/port/definition": {
+    "sha256": "1915cd692d3b19d814007446d9ab8c0a2cff60dc516035caba9cd00434802e94"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/port/path": {
+    "sha256": "5b6a3c0e9e60e2829fd2dce7c7f00d6db98ed9e84f43dbd407e9ca67de3e2413"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/parameters/backend_port/definition": {
+    "sha256": "b70797c6a59d071c0171317fc593cfdda53d35cf1cd7d9fffaca351c84468b05"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/parameters/backend_port/description": {
+    "sha256": "06b809960a94debf9253cbe7ac86bc220454a50ce25d27ad65dd319eb111dbe3"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/parameters/backend_port/destination/env": {
+    "sha256": "7ad5e1a1cccb631d1248434e7a4a4e0bd2b7a74369c3c3cf6724a6ff65423331"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/schemaVersion": {
+    "sha256": "f6d482dd2cad1932e8f6ed9f3a5514a5e20cd68d02237463125baf78013bd182"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/version": {
+    "sha256": "d05b37e57bc92debe8b4e38039876ab538a95a66caa835796dd5fbd439f0ba33"
+   }
+  },
+  "name": "machine",
+  "products": {
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/credentials/hostkey/env": {
+    "sha256": "205c6e161cd52c8a5e28ac1a14a70ece07886438418ef1ed7ff431a3c59c55c2"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/credentials/hostkey/path": {
+    "sha256": "ea4278fd99a3cc839efd8d8675c2b754a6e556e0cd79e2dc10df03e9be071a56"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/custom/com.example.backup-preferences/frequency": {
+    "sha256": "fa6a92cf80cf218ed717b3cc3a405ffda3fdf6a983d72fed1bdd113622fea03d"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/custom/com.example.duffle-bag/icon": {
+    "sha256": "317d5a9514203bd1e19b80d39c846106513c7d20bd63271e8dbdb4821bff63b1"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/custom/com.example.duffle-bag/iconType": {
+    "sha256": "2775d1b05dce8419e4bab67f17fb5ed87eb0ca5b30232a04de1d574b99558200"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/default": {
+    "sha256": "48449a14a4ff7d79bb7a1b6f3d488eba397c36ef25634c111b49baf362511afc"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/maximum": {
+    "sha256": "205e7b780de08f42eda9fbf1715507758afd1f2eb499ffc6d0a352f904ee72f1"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/minimum": {
+    "sha256": "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/http_port/type": {
+    "sha256": "bb894e256c101d183cfd51432eebb3feb183cf155da5994b19a45406a3e24aac"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/port/maximum": {
+    "sha256": "f2f89ede8e7d4b3d2243dea1ca96b8ece56f793811d9708b4a0181bf81a50011"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/port/minimum": {
+    "sha256": "e39eef82f61b21e2e7f762fcc4307358f165757f2e77ec855d6992f7e0191932"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/port/type": {
+    "sha256": "bb894e256c101d183cfd51432eebb3feb183cf155da5994b19a45406a3e24aac"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/string/type": {
+    "sha256": "e9e5c1c9e4f6277339d1bcde0733a59bd42f8731f449da6dc13010a916930d48"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/contentEncoding": {
+    "sha256": "cb65d001ead1184d17391b55d1e96be555a573d9254cac717104f5d9d97e817c"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/contentMediaType": {
+    "sha256": "fc395c0b2477371951c95b71625d3919c73980dbb24aeca496578fc86a904add"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/type": {
+    "sha256": "e9e5c1c9e4f6277339d1bcde0733a59bd42f8731f449da6dc13010a916930d48"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/definitions/x509Certificate/writeOnly": {
+    "sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/description": {
+    "sha256": "12ccf5980e26a71d58ac3b877b24f82fdaede3e01446038585b5b201d4b83c55"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/images/my-microservice/contentDigest": {
+    "sha256": "a9b0c315f1bc108882e4488d1d9320264259585a2af6e9ebdfae4a3191262b51"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/images/my-microservice/description": {
+    "sha256": "a3ff9793ffc0d9ae43064176db5add9cd33c579001cdf90f792b7ca9a0e004a7"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/images/my-microservice/image": {
+    "sha256": "be56793296fdb27458fd80666e5dcd1af52dd298760097ed7e73944e70e05118"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/invocationImages/[0]/contentDigest": {
+    "sha256": "8aca5133332d02975e86c282acc4d55b1afdab3b25f8fd8b3ec5cf2ff8362f99"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/invocationImages/[0]/image": {
+    "sha256": "d33274172ff3405c8cbf2ebc6cbe2f3d5904a0d53d5521d0aa6a390124e51703"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/invocationImages/[0]/imageType": {
+    "sha256": "f320b810ea61ce6405c478a1a67befdcc117a307e62f17deb2417be2f98b1864"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/maintainers/[0]/email": {
+    "sha256": "ea6b0d7bd10c06cbda2212bed77c5b2f9c0ef7b218afaf8e013f4466ba9f2ad1"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/maintainers/[0]/name": {
+    "sha256": "6682c39fd22bf39169f435916402584970df9a4d6ed72fc7ab7db46dca57d3e4"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/maintainers/[0]/url": {
+    "sha256": "5775c078c67ebad469f37e1d888f3084804a19ce7511c28c74c54e8232a51bdb"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/name": {
+    "sha256": "7b91cf1e312a84544a3d5f82ce965daf5620579a4a5e7d37b90829238a2f1055"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/clientCert/definition": {
+    "sha256": "157c4a9d3e97adcdd2028934f7c21db802f1c90d2193ba902fb9cc17fd713402"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/clientCert/path": {
+    "sha256": "2c66367f304e04df32081f665b5e106d4835b8544b7999fbe5bc73cd7d16b94c"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/applyTo": {
+    "sha256": "2594d48ff5c9c3577770805617147fe8b06d206b22baa806c3fd21f352acd183"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/definition": {
+    "sha256": "e9e5c1c9e4f6277339d1bcde0733a59bd42f8731f449da6dc13010a916930d48"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/description": {
+    "sha256": "da192c9f51c6dc131efe1418a1a408bbef863fd264cc488db48f947bb955efb4"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/hostName/path": {
+    "sha256": "fcc9b2b4e2eb66597d77def766e3ade74c37ff8f830bd0808303345a5ec80761"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/port/definition": {
+    "sha256": "1915cd692d3b19d814007446d9ab8c0a2cff60dc516035caba9cd00434802e94"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/outputs/port/path": {
+    "sha256": "5b6a3c0e9e60e2829fd2dce7c7f00d6db98ed9e84f43dbd407e9ca67de3e2413"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/parameters/backend_port/definition": {
+    "sha256": "b70797c6a59d071c0171317fc593cfdda53d35cf1cd7d9fffaca351c84468b05"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/parameters/backend_port/description": {
+    "sha256": "06b809960a94debf9253cbe7ac86bc220454a50ce25d27ad65dd319eb111dbe3"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/parameters/backend_port/destination/env": {
+    "sha256": "7ad5e1a1cccb631d1248434e7a4a4e0bd2b7a74369c3c3cf6724a6ff65423331"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/schemaVersion": {
+    "sha256": "f6d482dd2cad1932e8f6ed9f3a5514a5e20cd68d02237463125baf78013bd182"
+   },
+   "cnab+json:/home/saky/Work/secure-systems-lab/cnab-ite-4/bundle.json$/version": {
+    "sha256": "d05b37e57bc92debe8b4e38039876ab538a95a66caa835796dd5fbd439f0ba33"
+   }
+  }
+ }
+}
