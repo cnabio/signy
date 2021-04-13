@@ -34,6 +34,8 @@ func init() {
 	rootCmd.AddCommand(
 		newListCmd(),
 		newSignCmd(),
+		newPushCmd(),
+		newPullCmd(),
 		newVerifyCmd(),
 	)
 
