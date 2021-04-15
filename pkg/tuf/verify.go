@@ -65,26 +65,8 @@ func GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout string) (*cl
 	}
 
 	trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
-	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
-	return target, trustedSHA, nil
-}
-
-// GetTargetAndSHA returns the target with roles and the SHA256 of the target file
-func GetTargetAndSHAString(ref, trustServer, tlscacert, trustDir, timeout string) (*client.TargetWithRole, string, error) {
-	repoInfo, tag, err := getRepoAndTag(ref)
-	if err != nil {
-		return nil, "", fmt.Errorf("cannot get repo and tag from reference: %v", err)
-	}
-
-	target, err := GetTargetWithRole(repoInfo.Name.Name(), tag, trustServer, tlscacert, trustDir, timeout)
-	if err != nil {
-		return nil, "", err
-	}
-
-	trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
-	//not sure if this is correct but it works for now
-	trustedSHA = string(target.Hashes["sha256"])
-
+	//before i had to do this trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
+	//trustedSHA := string(target.Hashes["sha256"])
 	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
 	return target, trustedSHA, nil
 }

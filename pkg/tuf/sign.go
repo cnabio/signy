@@ -1,11 +1,13 @@
 package tuf
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 	canonicaljson "github.com/docker/go/canonical/json"
+	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
@@ -98,8 +100,8 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 	return target, err
 }
 
-// SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublishWithTarget(trustDir, trustServer, ref string, pushResult types.PushResult, tlscacert, rootKey, timeout string, custom *canonicaljson.RawMessage) (*client.Target, error) {
+// SignAndPublish signs a Docker Image, then publishes the metadata to a trust server
+func SignAndPublishWithImagePushResult(trustDir, trustServer, ref string, pushResult types.PushResult, tlscacert, rootKey, timeout string, custom *canonicaljson.RawMessage) (*client.Target, error) {
 	if err := EnsureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
@@ -159,7 +161,7 @@ func SignAndPublishWithTarget(trustDir, trustServer, ref string, pushResult type
 		}
 	}
 
-	target, err := NewTargetCustom(tag, pushResult, custom)
+	target, err := NewTargetFromPushResult(tag, pushResult, custom)
 	if err != nil {
 		return nil, err
 	}
@@ -176,14 +178,18 @@ func SignAndPublishWithTarget(trustDir, trustServer, ref string, pushResult type
 	return target, err
 }
 
-// NewTarget is a helper method that returns a Target
-func NewTargetCustom(targetName string, pushResult types.PushResult, targetCustom *canonicaljson.RawMessage) (*client.Target, error) {
+func NewTargetFromPushResult(targetName string, pushResult types.PushResult, targetCustom *canonicaljson.RawMessage) (*client.Target, error) {
 
 	meta := pushResult.Digest
 	meta = strings.ReplaceAll(meta, "sha256:", "")
 	size := int64(pushResult.Size)
 
-	hashes := data.Hashes{"sha256": []byte(meta)}
+	imageSHAasByteArray, err := hex.DecodeString(meta)
+	if err != nil {
+		return nil, err
+	}
+
+	hashes := data.Hashes{notary.SHA256: imageSHAasByteArray}
 
 	return &client.Target{Name: targetName, Hashes: hashes, Length: size, Custom: targetCustom}, nil
 }
