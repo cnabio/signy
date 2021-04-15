@@ -31,9 +31,10 @@ type pushCmd struct {
 	verifyOnOS bool
 	pushImage  string
 
-	intotoLayout    string
-	intotoLayoutKey string
-	intotoLinkDir   string
+	layout string
+	// TODO: figure out a way to pass layout root key to TUF (not in the custom object)
+	layoutKey string
+	linkDir   string
 
 	registryCredentials string
 	registryUser        string
@@ -59,9 +60,9 @@ Push to docker and notary with trust data`
 
 	cmd.Flags().StringVarP(&push.pushImage, "image", "i", "", "container image to push")
 
-	cmd.Flags().StringVarP(&push.intotoLayout, "intotoLayout", "", "intoto/root.layout", "intotoLayout")
-	cmd.Flags().StringVarP(&push.intotoLayoutKey, "intotoLayoutKey", "", "intoto/alice.pub", "intotoLayoutKey")
-	cmd.Flags().StringVarP(&push.intotoLinkDir, "intotoLinkDir", "", "intoto/", "intotoLinkDir")
+	cmd.Flags().StringVarP(&push.layout, "layout", "", "intoto/root.layout", "Path to the in-toto root layout file")
+	cmd.Flags().StringVarP(&push.linkDir, "links", "", "intoto/", "Path to the in-toto links directory")
+	cmd.Flags().StringVarP(&push.layoutKey, "layout-key", "", "intoto/alice.pub", "Path to the in-toto root layout public keys")
 
 	cmd.Flags().StringVarP(&push.registryUser, "registryUser", "", viper.GetString("PUSH_REGISTRY_USER"), "docker registry user")
 	cmd.Flags().StringVarP(&push.registryCredentials, "registryCredentials", "", viper.GetString("PUSH_REGISTRY_CREDENTIALS"), "docker registry credentials (api key or password)")
@@ -81,11 +82,11 @@ func (v *pushCmd) run() error {
 	if v.pushImage == "" {
 		return fmt.Errorf("Must specify an image for push")
 	}
-	if v.intotoLayoutKey == "" || v.intotoLayout == "" || v.intotoLinkDir == "" {
+	if v.layout == "" || v.linkDir == "" || v.layoutKey == "" {
 		return fmt.Errorf("Required in-toto metadata not found")
 	}
 
-	if intoto.ValidateFromPath(v.intotoLayout) != nil {
+	if intoto.ValidateFromPath(v.layout) != nil {
 		return fmt.Errorf("validation for in-toto metadata failed")
 	}
 
@@ -125,7 +126,7 @@ func (v *pushCmd) run() error {
 	log.Infof("Adding In-Toto layout and links metadata to TUF")
 
 	//get the json message we'll be adding to the custom field
-	custom, err := intoto.GetMetadataRawMessage(v.intotoLayout, v.intotoLinkDir, v.intotoLayoutKey)
+	custom, err := intoto.GetMetadataRawMessage(v.layout, v.linkDir, v.layoutKey)
 	if err != nil {
 		return fmt.Errorf("cannot get metadata message: %v", err)
 	}
