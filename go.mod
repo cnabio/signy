@@ -64,7 +64,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20201021035429-f5854403a974
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/sys v0.0.0-20210412220455-f1c623a9e750
+	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c
 	golang.org/x/text v0.3.3
 	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/genproto v0.0.0-20191009194640-548a555dbc03

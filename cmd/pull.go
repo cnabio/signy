@@ -7,16 +7,14 @@ import (
 
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/docker/api/types"
 	dockerClient "github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-//cd /Users/scottbuckel/Desktop/push-with-intoto/push-with-intoto && make bootstrap build && cd bin && ./push-with-intoto pull -i sebbyii/testimage:test && cd ..
 type pullCmd struct {
+	/* TODO: Clean these up */
 	ref       string
 	thick     bool
 	localFile string
@@ -25,36 +23,30 @@ type pullCmd struct {
 	verifyOnOS bool
 	pullImage  string
 
-	intotoLayout    string
-	intotoLayoutKey string
-	intotoLinkDir   string
-
-	notaryServer string
+	intotoVerifyImage string
 }
 
 func newPullCmd() *cobra.Command {
 	const pullDesc = `
-Pull to docker and notary with trust data`
+		Pull to docker and notary with trust data`
 	pull := pullCmd{}
 	cmd := &cobra.Command{
 		Use:   "pull [target reference]",
 		Short: "Pull",
 		Long:  pullDesc,
-		//Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//		push.ref = args[0]
 			return pull.run()
 		},
 	}
 
 	cmd.Flags().StringVarP(&pull.pullImage, "image", "i", "", "container image to pull")
 
-	cmd.Flags().StringVarP(&pull.notaryServer, "notaryServer", "", viper.GetString("PUSH_NOTARY_SERVER"), "notary server")
+	/* TODO change default image */
+	cmd.Flags().StringVarP(&pull.intotoVerifyImage, "intotoVerifyImage", "", "sebbyii/signy-intoto-verifier", "intotoverifyimage")
 
 	return cmd
 }
 
-//cd /Users/scottbuckel/Desktop/push-with-intoto/push-with-intoto && make bootstrap build && cd bin && ./push-with-intoto pull -i sebbyii/testimage:test && cd ..
 func (v *pullCmd) run() error {
 
 	if v.pullImage == "" {
@@ -64,16 +56,18 @@ func (v *pullCmd) run() error {
 	ctx := context.Background()
 	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv, dockerClient.WithAPIVersionNegotiation())
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Couldn't initialize dockerClient")
 	}
 
-	//pull the actual image
-	reader, err := cli.ImagePull(ctx, v.pullImage, types.ImagePullOptions{})
+	//pull the image from the repository
+	log.Infof("Pulling image %v from registry", v.pullImage)
+
+	_, err = cli.ImagePull(ctx, v.pullImage, types.ImagePullOptions{})
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("Couldnt pull image %v", err)
 	}
 
-	//there has to be a better way do do this, basically we inspect the image we just puleld, that image has a few digests (for example, if an image was tagged multiple times)
+	//there has to be a better way do do this, we inspect the image we just pulled, that image has a few digests (for example, if an image was tagged multiple times)
 	imageDigests, _, err := cli.ImageInspectWithRaw(ctx, v.pullImage)
 	pulledSHA := ""
 	for _, element := range imageDigests.RepoDigests {
@@ -85,41 +79,28 @@ func (v *pullCmd) run() error {
 			//remove the image:@sha256, return only the actual sha
 			pulledSHA = strings.Split(element, ":")[1]
 		}
-
 	}
 
+	log.Infof("Successfully pulled image %v", v.pullImage)
+
 	//pull the data from notary
-	target, trustedSHA, err := tuf.GetTargetAndSHAString(v.pullImage, v.notaryServer, "root-ca.crt", trustDir, "20s")
+	target, trustedSHA, err := tuf.GetTargetAndSHA(v.pullImage, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
 		return err
 	}
 
 	if pulledSHA == trustedSHA {
-		log.Infof("Pulled SHA matches trusted notary SHA: SHA256: %v matches %v", pulledSHA, trustedSHA)
+		log.Infof("Pulled SHA matches TUF SHA: SHA256: %v matches %v", pulledSHA, trustedSHA)
 	} else {
-		return fmt.Errorf("Our pulled image doesn't match notary!!! ")
+		return fmt.Errorf("Pulled image digest doesn't match TUF SHA! Pulled SHA: %v doesn't match TUF SHA: %v ", pulledSHA, trustedSHA)
 	}
 
-	verificationDir, err := intoto.GetVerificationDir(target)
-
-	if err != nil {
-		return err
+	if target.Custom == nil {
+		return fmt.Errorf("Error: TUF server doesn't have the custom field filled with in-toto metadata.")
 	}
 
-	spew.Dump(verificationDir)
-
-	//temporary to get compiler not to bitch
-	if target == nil {
-		spew.Dump(target)
-	}
-
-	spew.Dump(trustedSHA)
-
-	//temp so i dont get errors
-	if reader == nil {
-		spew.Dump(reader)
-	}
-
-	return intoto.VerifyInContainer(target, []byte(v.pullImage), "sebbyii/signy-intoto-verifier", logLevel)
-
+	/*
+		TODO: Allow other verifications like Signy verify does
+	*/
+	return intoto.VerifyInContainer(target, []byte(v.pullImage), v.intotoVerifyImage, logLevel)
 }

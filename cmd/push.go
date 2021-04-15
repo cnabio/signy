@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/pkg/jsonmessage"
+	"github.com/theupdateframework/notary"
 
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
@@ -20,6 +22,7 @@ import (
 )
 
 type pushCmd struct {
+	/* TODO: Clean these up */
 	ref       string
 	thick     bool
 	localFile string
@@ -34,8 +37,6 @@ type pushCmd struct {
 
 	registryCredentials string
 	registryUser        string
-
-	notaryServer string
 }
 
 func newPushCmd() *cobra.Command {
@@ -65,8 +66,6 @@ Push to docker and notary with trust data`
 	cmd.Flags().StringVarP(&push.registryUser, "registryUser", "", viper.GetString("PUSH_REGISTRY_USER"), "docker registry user")
 	cmd.Flags().StringVarP(&push.registryCredentials, "registryCredentials", "", viper.GetString("PUSH_REGISTRY_CREDENTIALS"), "docker registry credentials (api key or password)")
 
-	cmd.Flags().StringVarP(&push.notaryServer, "notaryServer", "", viper.GetString("PUSH_NOTARY_SERVER"), "notary server")
-
 	return cmd
 }
 
@@ -77,11 +76,17 @@ type Metadata struct {
 	Links  map[string][]byte `json:"links"`
 }
 
-//cd /Users/scottbuckel/Desktop/push-with-intoto/push-with-intoto && make bootstrap build && cd bin && ./push-with-intoto push -i sebbyii/testimage:test && cd ..
 func (v *pushCmd) run() error {
 
 	if v.pushImage == "" {
 		return fmt.Errorf("Must specify an image for push")
+	}
+	if v.intotoLayoutKey == "" || v.intotoLayout == "" || v.intotoLinkDir == "" {
+		return fmt.Errorf("Required in-toto metadata not found")
+	}
+
+	if intoto.ValidateFromPath(v.intotoLayout) != nil {
+		return fmt.Errorf("validation for in-toto metadata failed")
 	}
 
 	//set up our docker client
@@ -99,12 +104,14 @@ func (v *pushCmd) run() error {
 	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 	ctx := context.Background()
 
+	log.Infof("Pushing image %v to registry", v.pushImage)
+
 	//push the image
 	resp, err := cli.ImagePush(ctx, v.pushImage, types.ImagePushOptions{RegistryAuth: authStr})
 	defer resp.Close()
 
 	//for debugging, or else you cant see if wrong pw or whatnot
-	//TODO: How to see this info all the time?
+	//TODO: How to see this info all the time? if you consume it, it's no longer usable in the future
 	//io.Copy(os.Stdout, resp)
 
 	//get the result of push, this is weird because it requires getting the aux. value of the response
@@ -113,34 +120,28 @@ func (v *pushCmd) run() error {
 		return err
 	}
 
-	//again, just for debugging
-	//io.Copy(os.Stdout, resp)
+	log.Infof("Image successfully pushed: {tag, sha, size} %v", pushResult)
 
-	if v.intotoLayoutKey == "" || v.intotoLayout == "" || v.intotoLinkDir == "" {
-		return fmt.Errorf("required in-toto metadata not found")
-	}
 	log.Infof("Adding In-Toto layout and links metadata to TUF")
-	err = intoto.ValidateFromPath(v.intotoLayout)
-	if err != nil {
-		return fmt.Errorf("validation for in-toto metadata failed: %v", err)
-	}
+
+	//get the json message we'll be adding to the custom field
 	custom, err := intoto.GetMetadataRawMessage(v.intotoLayout, v.intotoLinkDir, v.intotoLayoutKey)
 	if err != nil {
 		return fmt.Errorf("cannot get metadata message: %v", err)
 	}
 
 	//Sign and publish and get a target back
-	target, err := tuf.SignAndPublishWithTarget(trustDir, v.notaryServer, v.pushImage, pushResult, "root-ca.crt", "", "20s", &custom)
+	target, err := tuf.SignAndPublishWithImagePushResult(trustDir, trustServer, v.pushImage, pushResult, tlscacert, "", timeout, &custom)
 	if err != nil {
 		fmt.Errorf("cannot sign and publish trust data: %v", err)
-
 	}
 
-	log.Infof("Pushed trust data for %v: %v\n", v.pushImage, "with sha256 of "+string(target.Hashes["sha256"]))
+	log.Infof("Pushed trust data for %v: %v ", v.pushImage, hex.EncodeToString(target.Hashes[notary.SHA256]))
 
 	return nil
 }
 
+//the docker daemon responds with a lot of messages. we're only interested in the response with the aux field, which contains the digest
 func parseDockerDaemonJsonMessages(r io.Reader) (types.PushResult, error) {
 	var result types.PushResult
 
