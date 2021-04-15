@@ -58,7 +58,7 @@ Push to docker and notary with trust data`
 	//need to set this to automatically check for env variables for viper.get
 	viper.AutomaticEnv()
 
-	cmd.Flags().StringVarP(&push.pushImage, "image", "i", "", "container image to push")
+	cmd.Flags().StringVarP(&push.pushImage, "image", "i", "", "container image to push (must be built on your local system)")
 
 	cmd.Flags().StringVarP(&push.layout, "layout", "", "intoto/root.layout", "Path to the in-toto root layout file")
 	cmd.Flags().StringVarP(&push.linkDir, "links", "", "intoto/", "Path to the in-toto links directory")
