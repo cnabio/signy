@@ -65,8 +65,6 @@ func GetTargetAndSHA(ref, trustServer, tlscacert, trustDir, timeout string) (*cl
 	}
 
 	trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
-	//before i had to do this trustedSHA := hex.EncodeToString(target.Hashes["sha256"])
-	//trustedSHA := string(target.Hashes["sha256"])
 	log.Infof("Pulled trust data for %v, with role %v - SHA256: %v", ref, target.Role, trustedSHA)
 	return target, trustedSHA, nil
 }
