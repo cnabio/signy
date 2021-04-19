@@ -61,13 +61,6 @@ Push to docker and notary with trust data`
 	return cmd
 }
 
-type Metadata struct {
-	// TODO: remove this once the TUF targets key is used to sign the root layout
-	Key    []byte            `json:"key"`
-	Layout []byte            `json:"layout"`
-	Links  map[string][]byte `json:"links"`
-}
-
 func (v *pushCmd) run() error {
 
 	if v.pushImage == "" {
@@ -93,6 +86,10 @@ func (v *pushCmd) run() error {
 		Password: v.registryCredentials,
 	}
 	encodedJSON, err := json.Marshal(authConfig)
+	if err != nil {
+		return err
+	}
+
 	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 	ctx := context.Background()
 
@@ -107,7 +104,7 @@ func (v *pushCmd) run() error {
 	//io.Copy(os.Stdout, resp)
 
 	//get the result of push, this is weird because it requires getting the aux. value of the response
-	pushResult, err := parseDockerDaemonJsonMessages(resp)
+	pushResult, err := parseDockerDaemonJSONMessages(resp)
 	if err != nil {
 		return err
 	}
@@ -125,7 +122,7 @@ func (v *pushCmd) run() error {
 	//Sign and publish and get a target back
 	target, err := tuf.SignAndPublishWithImagePushResult(trustDir, trustServer, v.pushImage, pushResult, tlscacert, "", timeout, &custom)
 	if err != nil {
-		fmt.Errorf("cannot sign and publish trust data: %v", err)
+		return fmt.Errorf("cannot sign and publish trust data: %v", err)
 	}
 
 	log.Infof("Pushed trust data for %v: %v ", v.pushImage, hex.EncodeToString(target.Hashes[notary.SHA256]))
@@ -134,7 +131,7 @@ func (v *pushCmd) run() error {
 }
 
 //the docker daemon responds with a lot of messages. we're only interested in the response with the aux field, which contains the digest
-func parseDockerDaemonJsonMessages(r io.Reader) (types.PushResult, error) {
+func parseDockerDaemonJSONMessages(r io.Reader) (types.PushResult, error) {
 	var result types.PushResult
 
 	decoder := json.NewDecoder(r)
