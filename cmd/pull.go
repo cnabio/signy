@@ -65,6 +65,10 @@ func (v *pullCmd) run() error {
 
 	//there has to be a better way do do this, we inspect the image we just pulled, that image has a few digests (for example, if an image was tagged multiple times)
 	imageDigests, _, err := cli.ImageInspectWithRaw(ctx, v.pullImage)
+	if err != nil {
+		return err
+	}
+
 	pulledSHA := ""
 	for _, element := range imageDigests.RepoDigests {
 
@@ -92,7 +96,7 @@ func (v *pullCmd) run() error {
 	}
 
 	if target.Custom == nil {
-		return fmt.Errorf("Error: TUF server doesn't have the custom field filled with in-toto metadata.")
+		return fmt.Errorf("Error: TUF server doesn't have the custom field filled with in-toto metadata")
 	}
 
 	/*
