@@ -16,6 +16,7 @@ func TestVerify(t *testing.T) {
 
 	// the verification step generates a file called untar.link
 	os.Remove("untar.link")
+
 }
 
 func TestValidate(t *testing.T) {
@@ -25,6 +26,10 @@ func TestValidate(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = ValidateLayout(*l)
+
+	// the validation step generates a directory
+	os.RemoveAll(testDir + "/demo-project")
+
 	assert.NoError(t, err)
 }
 
