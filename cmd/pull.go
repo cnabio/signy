@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cnabio/signy/pkg/docker"
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
 	"github.com/docker/docker/api/types"
@@ -14,16 +15,8 @@ import (
 )
 
 type pullCmd struct {
-	/* TODO: Clean these up */
-	ref       string
-	thick     bool
-	localFile string
-
-	intoto     bool
-	verifyOnOS bool
-	pullImage  string
-
-	intotoVerifyImage string
+	pullImage         string
+	verificationImage string
 }
 
 func newPullCmd() *cobra.Command {
@@ -40,9 +33,7 @@ func newPullCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&pull.pullImage, "image", "i", "", "container image to pull")
-
-	/* TODO change default image */
-	cmd.Flags().StringVarP(&pull.intotoVerifyImage, "intotoVerifyImage", "", "sebbyii/signy-intoto-verifier", "intotoverifyimage")
+	cmd.Flags().StringVarP(&pull.verificationImage, "intotoVerificationImage", "v", docker.VerificationImage, "container image to run the in-toto verification")
 
 	return cmd
 }
@@ -100,7 +91,7 @@ func (v *pullCmd) run() error {
 	}
 
 	/*
-		TODO: Allow other verifications like Signy verify does
+		TODO: Allow other verifications like `Signy verify` does, also fail better when RuleVerificationError happen
 	*/
-	return intoto.VerifyInContainer(target, []byte(v.pullImage), v.intotoVerifyImage, logLevel)
+	return intoto.VerifyInContainer(target, []byte(v.pullImage), v.verificationImage, logLevel)
 }

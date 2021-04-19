@@ -22,14 +22,7 @@ import (
 )
 
 type pushCmd struct {
-	/* TODO: Clean these up */
-	ref       string
-	thick     bool
-	localFile string
-
-	intoto     bool
-	verifyOnOS bool
-	pushImage  string
+	pushImage string
 
 	layout string
 	// TODO: figure out a way to pass layout root key to TUF (not in the custom object)
@@ -59,11 +52,9 @@ Push to docker and notary with trust data`
 	viper.AutomaticEnv()
 
 	cmd.Flags().StringVarP(&push.pushImage, "image", "i", "", "container image to push (must be built on your local system)")
-
 	cmd.Flags().StringVarP(&push.layout, "layout", "", "intoto/root.layout", "Path to the in-toto root layout file")
 	cmd.Flags().StringVarP(&push.linkDir, "links", "", "intoto/", "Path to the in-toto links directory")
 	cmd.Flags().StringVarP(&push.layoutKey, "layout-key", "", "intoto/alice.pub", "Path to the in-toto root layout public keys")
-
 	cmd.Flags().StringVarP(&push.registryUser, "registryUser", "", viper.GetString("PUSH_REGISTRY_USER"), "docker registry user")
 	cmd.Flags().StringVarP(&push.registryCredentials, "registryCredentials", "", viper.GetString("PUSH_REGISTRY_CREDENTIALS"), "docker registry credentials (api key or password)")
 
