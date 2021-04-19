@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/cli/cli/command"
 	cliflags "github.com/docker/cli/cli/flags"
 	"github.com/docker/distribution/reference"
@@ -56,7 +55,6 @@ func Run(verificationImage, verificationDir, logLevel string) error {
 	case client.IsErrNotFound(err):
 		log.Errorf("Unable to find image '%s' locally", verificationImage)
 		if err := pullImage(ctx, cli, verificationImage); err != nil {
-
 			return err
 		}
 		if resp, err = cli.Client().ContainerCreate(ctx, cfg, &container.HostConfig{}, nil, ""); err != nil {
@@ -81,7 +79,6 @@ func Run(verificationImage, verificationDir, logLevel string) error {
 	}
 	err = cli.Client().CopyToContainer(ctx, resp.ID, "/", arch, copyOpts)
 	if err != nil {
-		spew.Dump("about to error")
 		return err
 	}
 
