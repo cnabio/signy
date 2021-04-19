@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cnabio/signy/pkg/docker"
-	"github.com/cnabio/signy/pkg/intoto"
-	"github.com/cnabio/signy/pkg/tuf"
 	"github.com/docker/docker/api/types"
 	dockerClient "github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/cnabio/signy/pkg/docker"
+	"github.com/cnabio/signy/pkg/intoto"
+	"github.com/cnabio/signy/pkg/tuf"
 )
 
 type pullCmd struct {
