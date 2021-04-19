@@ -190,7 +190,6 @@ To pull and image and verify it's digest SHA:
 
 This will pull the image from the registry, verify it's digest against what is stored in notary, and verify it's in-toto metadata that was pulled down from TUF.
 
-
 ### Tearing down
 
 - Stop all services:
