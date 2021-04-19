@@ -44,6 +44,10 @@ func (v *pullCmd) run() error {
 		return fmt.Errorf("Must specify an image for pull")
 	}
 
+	if strings.HasSuffix(v.verificationImage, ":") {
+		return fmt.Errorf("Tag not specfied for the verification image. If using the default image, maybe you didn't compile with TAG= set.")
+	}
+
 	ctx := context.Background()
 	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv, dockerClient.WithAPIVersionNegotiation())
 	if err != nil {
