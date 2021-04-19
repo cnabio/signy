@@ -46,7 +46,7 @@ func (v *pullCmd) run() error {
 
 	//if the user is using the default verification image, check that signy was built with a tag for that image
 	if strings.HasSuffix(v.verificationImage, ":") {
-		return fmt.Errorf("Tag not specfied for the verification image. If using the default image, maybe you didn't compile with TAG= set.")
+		return fmt.Errorf("Tag not specfied for the verification image. If using the default image, maybe you didn't compile with TAG= set")
 	}
 
 	ctx := context.Background()
