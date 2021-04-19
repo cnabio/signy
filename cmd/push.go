@@ -12,13 +12,14 @@ import (
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/theupdateframework/notary"
 
-	"github.com/cnabio/signy/pkg/intoto"
-	"github.com/cnabio/signy/pkg/tuf"
 	dockerClient "github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/cnabio/signy/pkg/intoto"
+	"github.com/cnabio/signy/pkg/tuf"
 )
 
 type pushCmd struct {
@@ -98,6 +99,9 @@ func (v *pushCmd) run() error {
 	//push the image
 	resp, err := cli.ImagePush(ctx, v.pushImage, types.ImagePushOptions{RegistryAuth: authStr})
 	defer resp.Close()
+	if err != nil {
+		return fmt.Errorf("cannot push image to repository: %v", err)
+	}
 
 	//for debugging, or else you cant see if wrong pw or whatnot
 	//TODO: How to see this info all the time? if you consume it, it's no longer usable in the future
