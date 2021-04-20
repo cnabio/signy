@@ -6,6 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/cnabio/signy/pkg/tuf"
 )
@@ -34,10 +35,12 @@ func init() {
 	rootCmd.AddCommand(
 		newListCmd(),
 		newSignCmd(),
+		newPushCmd(),
+		newPullCmd(),
 		newVerifyCmd(),
 	)
 
-	rootCmd.PersistentFlags().StringVarP(&trustServer, "server", "", tuf.DockerNotaryServer, "The trust server used")
+	rootCmd.PersistentFlags().StringVarP(&trustServer, "server", "", viper.GetString("PUSH_NOTARY_SERVER"), "The trust server used")
 	rootCmd.PersistentFlags().StringVarP(&tlscacert, "tlscacert", "", "", "Trust certs signed only by this CA")
 	rootCmd.PersistentFlags().StringVarP(&trustDir, "dir", "d", tuf.DefaultTrustDir(), "Directory where the trust data is persisted to")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "info", `Set the logging level ("debug"|"info"|"warn"|"error"|"fatal")`)

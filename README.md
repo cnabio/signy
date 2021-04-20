@@ -2,7 +2,7 @@
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/cnabio/signy)
 
-Signy is an experimental tool that implements the CNAB Security specification. It implements signing and verifying for CNAB bundles in [the canonical formats (thin and thick bundles)](https://github.com/deislabs/cnab-spec/blob/master/104-bundle-formats.md).
+Signy is an experimental tool that implements the CNAB Security specification. It implements signing and verifying for CNAB bundles in [the canonical formats (thin and thick bundles)](https://github.com/deislabs/cnab-spec/blob/master/104-bundle-formats.md). As an added feature, it also supports pushing (signing) and pulling (verifying) of container images to a registry alongside it's in-toto metadata, which `docker pull` and `docker push` is unable to do.
 
 ## Notes
 
@@ -177,6 +177,18 @@ $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:
 Notes:
 
 - see current limitations about the in-toto signing key of the root layout
+
+### To sign container images and put the info in TUF alongside it's in-toto metadata
+
+`signy --tlscacert root-ca.crt push -i [image]`
+
+This command is nearly identical to the docker CLI command `docker push` when the environment variable `DOCKER_CONTENT_TRUST=1` and `DOCKER_CONTENT_TRUST_SERVER=[server:4443]` are set. In addition to signing the digest, we additionally push the in-toto metadata to the trust server just like `signy sign` does.
+
+To pull and image and verify it's digest SHA:
+
+`signy --tlscacert root-ca.crt pull -i [image]`
+
+This will pull the image from the registry, verify it's digest against what is stored in notary, and verify it's in-toto metadata that was pulled down from TUF.
 
 ### Tearing down
 
