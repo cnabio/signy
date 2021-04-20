@@ -67,24 +67,3 @@ func getVerificationDir(target *client.TargetWithRole, bundle []byte) (string, e
 
 	return verificationDir, nil
 }
-
-func GetVerificationDir(target *client.TargetWithRole) (string, error) {
-	m := &Metadata{}
-	err := json.Unmarshal(*target.Custom, m)
-	if err != nil {
-		return "", err
-	}
-
-	verificationDir, err := ioutil.TempDir(".", "in-toto")
-	if err != nil {
-		return "", err
-	}
-
-	log.Infof("Writing in-toto metadata files into %v", verificationDir)
-	err = WriteMetadataFiles(m, verificationDir)
-	if err != nil {
-		return "", err
-	}
-
-	return verificationDir, nil
-}
