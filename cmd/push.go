@@ -42,9 +42,7 @@ Push to docker and notary with trust data`
 		Use:   "push [target reference]",
 		Short: "Push",
 		Long:  pushDesc,
-		//Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//		push.ref = args[0]
 			return push.run()
 		},
 	}
