@@ -63,7 +63,6 @@ Push to docker and notary with trust data`
 }
 
 func (v *pushCmd) run() error {
-
 	if v.pushImage == "" {
 		return fmt.Errorf("Must specify an image for push")
 	}
