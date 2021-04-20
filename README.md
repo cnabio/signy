@@ -178,17 +178,17 @@ Notes:
 
 - see current limitations about the in-toto signing key of the root layout
 
-### To sign container images and put the info in TUF alongside it's in-toto metadata
+### To sign container images and put the info in TUF alongside its in-toto metadata
 
 `signy --tlscacert root-ca.crt push -i [image]`
 
 This command is nearly identical to the docker CLI command `docker push` when the environment variable `DOCKER_CONTENT_TRUST=1` and `DOCKER_CONTENT_TRUST_SERVER=[server:4443]` are set. In addition to signing the digest, we require in-toto metadata to push to the trust server. Unlike `signy sign` where the in-toto metadata is optional, it is required for `signy push`.
 
-To pull an image and verify it's digest SHA and in-toto metadata:
+To pull an image and verify its digest SHA and in-toto metadata:
 
 `signy --tlscacert root-ca.crt pull -i [image]`
 
-This will pull the image from the registry, verify it's digest against what is stored in TUF/Notary, and verify the in-toto metadata that was pulled down from TUF/Notary.
+This will pull the image from the registry, verify its digest against what is stored in TUF/Notary, and verify the in-toto metadata that was pulled down from TUF/Notary.
 
 ### Tearing down
 
