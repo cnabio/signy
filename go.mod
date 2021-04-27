@@ -56,20 +56,23 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
+	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.4.0
 	github.com/syndtr/gocapability v0.0.0-20180916011248-d98352740cb2
 	github.com/theupdateframework/notary v0.6.1
-	golang.org/x/crypto v0.0.0-20191029031824-8986dd9e96cf
-	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20191020212454-3e7259c5e7c2
-	golang.org/x/text v0.3.2
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
+	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
+	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
+	golang.org/x/text v0.3.3
+	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/genproto v0.0.0-20191009194640-548a555dbc03
 	google.golang.org/grpc v1.24.0
 	gopkg.in/yaml.v2 v2.2.4
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787
 )
 
-replace github.com/in-toto/in-toto-golang => github.com/radu-matei/in-toto-golang v0.0.0-20190816001733-ced95e46b974
+replace github.com/in-toto/in-toto-golang => github.com/radu-matei/in-toto-golang v0.0.0-20210426203218-225046ac7465
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
