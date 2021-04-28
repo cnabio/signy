@@ -73,6 +73,6 @@ require (
 	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787
 )
 
-replace github.com/in-toto/in-toto-golang => github.com/radu-matei/in-toto-golang v0.0.0-20190816001733-ced95e46b974
+replace github.com/in-toto/in-toto-golang => github.com/radu-matei/in-toto-golang v0.0.0-20210426203218-225046ac7465
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309
