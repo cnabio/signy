@@ -35,9 +35,8 @@ func init() {
 	rootCmd.AddCommand(
 		newListCmd(),
 		newSignCmd(),
-		newPushCmd(),
-		newPullCmd(),
 		newVerifyCmd(),
+		buildImageCommands(),
 	)
 
 	defaultNotaryServer := viper.GetString("PUSH_NOTARY_SERVER")
