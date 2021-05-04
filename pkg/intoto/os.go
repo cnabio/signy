@@ -52,11 +52,11 @@ func verifyOnOS(verificationDir string) error {
 		return fmt.Errorf("cannot read root layout pubkeys in %v: %v", verificationDir, err)
 	}
 	for _, filename := range filenames {
-		err = rootLayoutPubKey.LoadPublicKey(filename)
+		err = rootLayoutPubKey.LoadKey(filename, "rsassa-pss-sha256", []string{"sha256", "sha512"})
 		if err != nil {
 			return fmt.Errorf("cannot load layout public key %v: %v", filename, err)
 		}
-		rootLayoutPubKeys[rootLayoutPubKey.KeyId] = rootLayoutPubKey
+		rootLayoutPubKeys[rootLayoutPubKey.KeyID] = rootLayoutPubKey
 	}
 
 	var rootLayout in_toto.Metablock
@@ -95,7 +95,7 @@ func ValidateLayout(layout in_toto.Layout) error {
 	}
 
 	for keyID, key := range layout.Keys {
-		if key.KeyId != keyID {
+		if key.KeyID != keyID {
 			return fmt.Errorf("invalid key found")
 		}
 		if err := validateRSAPubKey(key); err != nil {
@@ -127,11 +127,11 @@ func ValidateLayout(layout in_toto.Layout) error {
 func validateRSAPubKey(key in_toto.Key) error {
 	if key.KeyType != "rsa" {
 		return fmt.Errorf("invalid KeyType for key '%s': should be 'rsa', got"+
-			" '%s'", key.KeyId, key.KeyType)
+			" '%s'", key.KeyID, key.KeyType)
 	}
 	if key.Scheme != "rsassa-pss-sha256" {
 		return fmt.Errorf("invalid scheme for key '%s': should be "+
-			"'rsassa-pss-sha256', got: '%s'", key.KeyId, key.Scheme)
+			"'rsassa-pss-sha256', got: '%s'", key.KeyID, key.Scheme)
 	}
 	if err := validatePubKey(key); err != nil {
 		return err
@@ -141,14 +141,14 @@ func validateRSAPubKey(key in_toto.Key) error {
 
 // validatePubKey is a general function to validate if a key is a valid public key.
 func validatePubKey(key in_toto.Key) error {
-	if err := validateHexString(key.KeyId); err != nil {
+	if err := validateHexString(key.KeyID); err != nil {
 		return fmt.Errorf("keyid: %s", err.Error())
 	}
 	if key.KeyVal.Private != "" {
-		return fmt.Errorf("in key '%s': private key found", key.KeyId)
+		return fmt.Errorf("in key '%s': private key found", key.KeyID)
 	}
 	if key.KeyVal.Public == "" {
-		return fmt.Errorf("in key '%s': public key cannot be empty", key.KeyId)
+		return fmt.Errorf("in key '%s': public key cannot be empty", key.KeyID)
 	}
 	return nil
 }
