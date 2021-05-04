@@ -60,7 +60,8 @@ func getVerificationDir(target *client.TargetWithRole, bundle []byte) (string, e
 		For a lot of in-toto demo example, it uses a .tar.gz example. In the future since we're using docker images, it should pull all data for verification from the image itself.
 	*/
 	log.Infof("Copy all files to the temp directory %v for verification", verificationDir)
-	err = copy("/Users/scottbuckel/Work/signy/signy/bin", verificationDir)
+	cwd, _ := os.Getwd()
+	err = copy(cwd, verificationDir)
 	if err != nil {
 		return "", err
 	}
