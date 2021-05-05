@@ -2,7 +2,7 @@
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/cnabio/signy)
 
-Signy is an experimental tool that implements the CNAB Security specification. It implements signing and verifying for CNAB bundles in [the canonical formats (thin and thick bundles)](https://github.com/deislabs/cnab-spec/blob/master/104-bundle-formats.md). As an added feature, it also supports pushing (signing) and pulling (verifying) of container images to a registry alongside its in-toto metadata.
+Signy is an experimental tool that implements the CNAB Security specification. It implements signing and verifying for CNAB bundles in [the canonical formats (thin and thick bundles)](https://github.com/deislabs/cnab-spec/blob/master/104-bundle-formats.md). As an added feature, it also supports pushing and pulling of container images alongside in-toto metadata with the `signy image` command.
 
 ## Notes
 
@@ -189,6 +189,15 @@ To pull an image and verify its digest SHA and in-toto metadata:
 `signy --tlscacert root-ca.crt pull -i [image]`
 
 This will pull the image from the registry, verify its digest against what is stored in TUF/Notary, and verify the in-toto metadata that was pulled down from TUF/Notary.
+
+```
+TODO:
+    - Currently it copies all files from the current directory into the in-toto temp directory for verification. For most in-toto proof-of-concepts, a .tgz or .tar file is typically used. This is our way to get that file in for verification.
+    - Have an option to pull the in-toto metadata to a different directory 
+    - Provide a better way to `docker login`. Currently you must provide a login to the registry as a command line param or as environment variables "PUSH_REGISTRY_USER" and "PUSH_REGISTRY_CREDENTIALS". 
+    - The image is pulled prior to testing the digest against the digest in Notary and prior to the in-toto verify. If the verify fails, we do not remove the image. 
+    - Only does VerifyOnOS. Should add VerifyInContainer like `signy verify` does.
+```
 
 ### Tearing down
 
