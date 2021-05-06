@@ -28,7 +28,7 @@ endif
 
 # TAG environment variable should be set before calling make
 LDFLAGS := "-s -w \
-  -X github.com/cnabio/signy/pkg/docker.Tag=$(TAG) \
+  -X github.com/cnabio/signy/pkg/docker.Tag=latest \
   -X main.Commit=$(COMMIT)     \
   -X main.Version=$(TAG)          \
   -X main.BuildTime=$(BUILDTIME)"
