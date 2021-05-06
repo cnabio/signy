@@ -18,7 +18,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/theupdateframework/notary"
 
-	"github.com/cnabio/signy/pkg/docker"
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
 )
@@ -72,15 +71,14 @@ func buildImagePullCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&pull.pullImage, "image", "i", "", "container image to pull")
-	cmd.Flags().StringVarP(&pull.verificationImage, "intotoVerificationImage", "v", docker.VerificationImage, "container image to run the in-toto verification")
+	//TODO: Add --verifyOnOS flag and verificationImage
 
 	return cmd
 
 }
 
 type pullCmd struct {
-	pullImage         string
-	verificationImage string
+	pullImage string
 }
 
 type pushCmd struct {
@@ -99,11 +97,6 @@ func (v *pullCmd) run() error {
 
 	if v.pullImage == "" {
 		return fmt.Errorf("Must specify an image for pull")
-	}
-
-	//if the user is using the default verification image, check that signy was built with a tag for that image
-	if strings.HasSuffix(v.verificationImage, ":") {
-		return fmt.Errorf("Tag not specfied for the verification image. If using the default image, maybe you didn't compile with TAG= set")
 	}
 
 	ctx := context.Background()
