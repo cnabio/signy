@@ -2,7 +2,7 @@ name: Build, test, and lint
 on:
   pull_request:
   push:
-    branches: [master]
+    branches: [main]
   release:
     types: [published]
 jobs:
@@ -19,7 +19,7 @@ jobs:
     - name: Inject slug/short variables
       uses: rlespinasse/github-slug-action@3.5.1
 
-    - name: Build and push master/tag and latest Docker images
+    - name: Build and push main/tag and latest Docker images
       uses: docker/build-push-action@v1.1.0
       if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
       with:
