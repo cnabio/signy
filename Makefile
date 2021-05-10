@@ -3,7 +3,6 @@ ORG             := cnabio
 BINDIR          := $(CURDIR)/bin
 GOFLAGS         :=
 GOBUILDTAGS     := osusergo
-LDFLAGS         := -w -s -X github.com/cnabio/signy/pkg/docker.Tag=$(TAG)
 
 ifeq ($(OS),Windows_NT)
 	TARGET = $(PROJECT).exe
@@ -15,9 +14,28 @@ else
 	CHECK  ?= which
 endif
 
+# These commands come from https://github.com/cnabio/cnab-to-oci/blob/c91ac3daf0d74446a914727e80ffa15529da16d8/Makefile#L14
+ifeq ($(COMMIT),)
+  COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null)
+endif
+ifeq ($(BUILDTIME),)
+  BUILDTIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ" 2> /dev/null)
+endif
+ifeq ($(BUILDTIME),)
+  BUILDTIME := unknown
+  $(warning unable to set BUILDTIME. Set the value manually)
+endif
+
+# TAG environment variable should be set before calling make
+LDFLAGS := "-s -w \
+  -X github.com/cnabio/signy/pkg/docker.Tag=latest \
+  -X main.Commit=$(COMMIT)     \
+  -X main.Version=$(TAG)          \
+  -X main.BuildTime=$(BUILDTIME)"
+
 .PHONY: build
 build:
-	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags '$(LDFLAGS)' -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
+	go build $(GOFLAGS) -tags '$(GOBUILDTAGS)' -ldflags $(LDFLAGS) -o $(BINDIR)/$(TARGET) github.com/$(ORG)/$(PROJECT)/cmd/...
 
 .PHONY: install
 install: build

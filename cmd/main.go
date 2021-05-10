@@ -12,6 +12,12 @@ import (
 )
 
 var (
+	Version   = ""
+	Commit    = ""
+	BuildTime = ""
+)
+
+var (
 	trustServer string
 	tlscacert   string
 	trustDir    string
@@ -31,12 +37,30 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Show the version, commit and buildtime",
+	Run: func(cmd *cobra.Command, args []string) {
+		if Version == "" {
+			Version = "unknown"
+		}
+		if Commit == "" {
+			Commit = "unknown"
+		}
+		if BuildTime == "" {
+			BuildTime = "unknown"
+		}
+		fmt.Printf("Version: %v\nCommit: %v\nBuilt on: %v\n", Version, Commit, BuildTime)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(
 		newListCmd(),
 		newSignCmd(),
 		newVerifyCmd(),
 		buildImageCommands(),
+		versionCmd,
 	)
 
 	defaultNotaryServer := viper.GetString("PUSH_NOTARY_SERVER")
