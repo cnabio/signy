@@ -21,10 +21,10 @@
     "sha256": "54d66a3cda423bb31027f388ffb6753a37e7bd5d9d883140fb818dac73456695"
    },
    "demo-project.tar.gz": {
-    "sha256": "c1af0445c4ed88b1db37ffb07dd777f6a95386d9f0f41ff883c669df0569973d"
+    "sha256": "06e18f59b4bdce32f2a0495151df975df630e1e9891d28e544679021d49723c1"
    },
    "root.layout": {
-    "sha256": "5f30d4d6f3bcbc6559d591274978aa3fbc33e81aae3ee67973b425e8319d777a"
+    "sha256": "05653fb5d93fc0368e49e50f3607ad1fb0bd4e165d274ac16330520099d51d27"
    }
   },
   "name": "untar",
@@ -36,13 +36,13 @@
     "sha256": "54d66a3cda423bb31027f388ffb6753a37e7bd5d9d883140fb818dac73456695"
    },
    "demo-project.tar.gz": {
-    "sha256": "c1af0445c4ed88b1db37ffb07dd777f6a95386d9f0f41ff883c669df0569973d"
+    "sha256": "06e18f59b4bdce32f2a0495151df975df630e1e9891d28e544679021d49723c1"
    },
    "demo-project/foo.py": {
     "sha256": "c2c0ea54fa94fac3a4e1575d6ed3bbd1b01a6d0b8deb39196bdc31c457ef731b"
    },
    "root.layout": {
-    "sha256": "5f30d4d6f3bcbc6559d591274978aa3fbc33e81aae3ee67973b425e8319d777a"
+    "sha256": "05653fb5d93fc0368e49e50f3607ad1fb0bd4e165d274ac16330520099d51d27"
    }
   }
  }
