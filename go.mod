@@ -7,6 +7,7 @@ require (
 	github.com/containerd/cgroups v1.0.1 // indirect
 	github.com/containerd/containerd v1.3.0
 	github.com/containerd/continuity v0.0.0-20190827140505-75bee3e2ccb6 // indirect
+	github.com/cyberphone/json-canonicalization v0.0.0-20210303052042-6bc126869bf4
 	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017
 	github.com/docker/cnab-to-oci v0.3.0-beta4
 	github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible

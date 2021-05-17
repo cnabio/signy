@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
-	canonicaljson "github.com/docker/go/canonical/json"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
+
+	"github.com/cnabio/signy/pkg/canonical_json"
 )
 
 // clearChangelist clears the notary staging changelist
@@ -23,7 +24,7 @@ func clearChangeList(notaryRepo client.Repository) error {
 }
 
 // SignAndPublish signs an artifact, then publishes the metadata to a trust server
-func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeout string, custom *canonicaljson.RawMessage) (*client.Target, error) {
+func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeout string, custom *canonical_json.RawMessage) (*client.Target, error) {
 	if err := EnsureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
@@ -101,7 +102,7 @@ func SignAndPublish(trustDir, trustServer, ref, file, tlscacert, rootKey, timeou
 }
 
 // SignAndPublish signs a Docker Image, then publishes the metadata to a trust server
-func SignAndPublishWithImagePushResult(trustDir, trustServer, ref string, pushResult types.PushResult, tlscacert, rootKey, timeout string, custom *canonicaljson.RawMessage) (*client.Target, error) {
+func SignAndPublishWithImagePushResult(trustDir, trustServer, ref string, pushResult types.PushResult, tlscacert, rootKey, timeout string, custom *canonical_json.RawMessage) (*client.Target, error) {
 	if err := EnsureTrustDir(trustDir); err != nil {
 		return nil, fmt.Errorf("cannot ensure trust directory: %v", err)
 	}
@@ -178,7 +179,7 @@ func SignAndPublishWithImagePushResult(trustDir, trustServer, ref string, pushRe
 	return target, err
 }
 
-func NewTargetFromPushResult(targetName string, pushResult types.PushResult, targetCustom *canonicaljson.RawMessage) (*client.Target, error) {
+func NewTargetFromPushResult(targetName string, pushResult types.PushResult, targetCustom *canonical_json.RawMessage) (*client.Target, error) {
 
 	meta := pushResult.Digest
 	meta = strings.ReplaceAll(meta, "sha256:", "")

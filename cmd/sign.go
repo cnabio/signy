@@ -4,10 +4,10 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	canonicaljson "github.com/docker/go/canonical/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/cnabio/signy/pkg/canonical_json"
 	"github.com/cnabio/signy/pkg/cnab"
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"
@@ -89,7 +89,7 @@ INFO[0001] Pushed successfully, with digest "sha256:b4936e42304c184bafc9b06dde9e
 }
 
 func (s *signCmd) run() error {
-	var cm *canonicaljson.RawMessage
+	var cm *canonical_json.RawMessage
 	if s.intoto {
 		if s.layout == "" || s.layoutKey == "" || s.linkDir == "" {
 			return fmt.Errorf("required in-toto metadata not found")
