@@ -1,4 +1,4 @@
-package canonical_json
+package canonicaljson
 
 import (
 	"encoding/json"

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cnabio/signy/pkg/canonical_json"
+	"github.com/cnabio/signy/pkg/canonicaljson"
 )
 
 // Metadata represents the In-Toto metadata stored in TUF.
@@ -52,7 +52,7 @@ func WriteMetadataFiles(m *Metadata, dir string) error {
 //
 // TODO: layout signing key should not be passed by the library.
 // Layouts should be signed with the targets key used to sign the TUF collection.
-func GetMetadataRawMessage(layout string, linkDir string, layoutKey string) (canonical_json.RawMessage, error) {
+func GetMetadataRawMessage(layout string, linkDir string, layoutKey string) (canonicaljson.RawMessage, error) {
 	k, err := ioutil.ReadFile(layoutKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get canonical JSON from file %v: %v", layoutKey, err)
@@ -88,7 +88,7 @@ func GetMetadataRawMessage(layout string, linkDir string, layoutKey string) (can
 		Links:  links,
 	}
 
-	raw, err := canonical_json.Marshal(m)
+	raw, err := canonicaljson.MarshalToRawMessage(m)
 	if err != nil {
 		return nil, fmt.Errorf("cannot encode in-toto metadata into canonical json %v: %v", m, err)
 	}
