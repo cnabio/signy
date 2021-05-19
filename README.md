@@ -2,7 +2,7 @@
 
 [![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/cnabio/signy)
 
-Signy is an experimental tool that implements the CNAB Security specification. It implements signing and verifying for CNAB bundles in [the canonical formats (thin and thick bundles)](https://github.com/deislabs/cnab-spec/blob/main/104-bundle-formats.md).
+Signy is an experimental tool that implements the CNAB Security specification. It implements signing and verifying for CNAB bundles in [the canonical formats (thin and thick bundles)](https://github.com/deislabs/cnab-spec/blob/main/104-bundle-formats.md). As an added feature, it also supports pushing and pulling of container images alongside in-toto metadata with the `signy image` command.
 
 ## Notes
 
@@ -177,6 +177,36 @@ $ signy --tlscacert=$NOTARY_CA --server https://localhost:4443 verify localhost:
 Notes:
 
 - see current limitations about the in-toto signing key of the root layout
+
+### To sign container images and put the info in TUF alongside its in-toto metadata
+
+`signy --tlscacert root-ca.crt image push -i [image]`
+
+This command is nearly identical to the docker CLI command `docker push` when the environment variable `DOCKER_CONTENT_TRUST=1` and `DOCKER_CONTENT_TRUST_SERVER=[server:4443]` are set. In addition to signing the digest, we require in-toto metadata to push to the trust server. Unlike `signy sign` where the in-toto metadata is optional, it is required for `signy push`.
+
+```Flags:
+  -h, --help                         help for push
+  -i, --image string                 container image to push (must be built on your local system)
+      --layout string                Path to the in-toto root layout file (default "intoto/root.layout")
+      --layout-key string            Path to the in-toto root layout public keys (default "intoto/root.pub")
+      --links string                 Path to the in-toto links directory (default "intoto/")
+      --registryCredentials string   docker registry credentials (api key or password), uses the PUSH_REGISTRY_CREDENTIALS environment variable
+      --registryUser string          docker registry user, also uses the PUSH_REGISTRY_USER environment variable
+
+To pull an image and verify its digest SHA and in-toto metadata:
+
+`signy --tlscacert root-ca.crt image pull -i [image]`
+
+This will pull the image from the registry, verify its digest against what is stored in TUF/Notary, and verify the in-toto metadata that was pulled down from TUF/Notary.
+
+```
+TODO - `signy image` :
+    - Currently `signy image pull` copies all files from the current directory into the in-toto temp directory for verification. For most in-toto proof-of-concepts, a .tgz or .tar file is typically used. This was an easy way to get those files in for verification.
+    - Have an option to pull the in-toto metadata to a different directory.
+    - Provide a better way to `docker login`. Currently you must provide a login to the registry as a command line param or as environment variables "PUSH_REGISTRY_USER" and "PUSH_REGISTRY_CREDENTIALS". Look into how `docker push` does this.
+    - The image is pulled prior to testing the digest against the digest in Notary and prior to the in-toto verify. If the verify fails, we do not remove the image. 
+    - Only does VerifyOnOS. Should add VerifyInContainer like `signy verify` does.
+```
 
 ### Tearing down
 

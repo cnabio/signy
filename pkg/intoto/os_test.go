@@ -16,6 +16,7 @@ func TestVerify(t *testing.T) {
 
 	// the verification step generates a file called untar.link
 	os.Remove("untar.link")
+
 }
 
 func TestValidate(t *testing.T) {
