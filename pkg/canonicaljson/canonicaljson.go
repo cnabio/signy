@@ -19,11 +19,3 @@ func Marshal(v interface{}) ([]byte, error) {
 	}
 	return canonicaljson.Transform(b)
 }
-
-func MarshalToRawMessage(v interface{}) (rawmessage.RawMessage, error) {
-	b, err := Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}

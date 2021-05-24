@@ -88,7 +88,7 @@ func GetMetadataRawMessage(layout string, linkDir string, layoutKey string) (can
 		Links:  links,
 	}
 
-	raw, err := canonicaljson.MarshalToRawMessage(m)
+	raw, err := canonicaljson.Marshal(m)
 	if err != nil {
 		return nil, fmt.Errorf("cannot encode in-toto metadata into canonical json %v: %v", m, err)
 	}
