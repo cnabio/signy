@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	canonicaljson "github.com/docker/go/canonical/json"
+	"github.com/cnabio/signy/pkg/canonicaljson"
 )
 
 // Metadata represents the In-Toto metadata stored in TUF.
@@ -88,10 +88,10 @@ func GetMetadataRawMessage(layout string, linkDir string, layoutKey string) (can
 		Links:  links,
 	}
 
-	raw, err := canonicaljson.MarshalCanonical(m)
+	raw, err := canonicaljson.Marshal(m)
 	if err != nil {
 		return nil, fmt.Errorf("cannot encode in-toto metadata into canonical json %v: %v", m, err)
 	}
 
-	return canonicaljson.RawMessage(raw), nil
+	return raw, nil
 }

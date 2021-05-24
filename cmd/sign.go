@@ -4,10 +4,10 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	canonicaljson "github.com/docker/go/canonical/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/cnabio/signy/pkg/canonicaljson"
 	"github.com/cnabio/signy/pkg/cnab"
 	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/cnabio/signy/pkg/tuf"

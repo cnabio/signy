@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
-	canonicaljson "github.com/docker/go/canonical/json"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
+
+	"github.com/cnabio/signy/pkg/canonicaljson"
 )
 
 // clearChangelist clears the notary staging changelist

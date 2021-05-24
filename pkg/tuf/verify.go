@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/docker/go/canonical/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/theupdateframework/notary/client"
 
+	"github.com/cnabio/signy/pkg/canonicaljson"
 	"github.com/cnabio/signy/pkg/cnab"
 )
 
@@ -24,7 +24,7 @@ func GetThinBundle(ref string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return json.MarshalCanonical(bun)
+	return canonicaljson.Marshal(bun)
 }
 
 // VerifyTrust ensures the trust metadata for a given GUN matches the metadata of the pushed bundle
