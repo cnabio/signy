@@ -110,6 +110,12 @@ func (v *verifyCmd) run() error {
 	}
 
 	if v.intoto {
+		// TODO: Put back TUF verification of in-toto metadata.
+		err = tuf.VerifyInTotoMetadata(v.ref, trustServer, tlscacert, trustDir, timeout)
+		if err != nil {
+			return err
+		}
+
 		if v.verifyOnOS {
 			log.Warn("Running in-toto inspections on the OS instead of in container...")
 			return intoto.VerifyOnOS(target, bundle)
