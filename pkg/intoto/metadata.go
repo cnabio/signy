@@ -48,6 +48,16 @@ func (custom *Custom) GetRawMessage() (canonicaljson.RawMessage, error) {
 	return canonicaljson.RawMessage(marshalled), nil
 }
 
+// ReadRawMessage reads a raw Canonical JSON message into this Custom
+func (custom *Custom) ReadRawMessage(rm *canonicaljson.RawMessage) error {
+	// TODO: check that the types/deferencing are correct
+	err := canonicaljson.Unmarshal(*rm, custom)
+	if err != nil {
+		return fmt.Errorf("cannot decode canonical json into custom metadata: %v", err)
+	}
+	return nil
+}
+
 // GetPublicKeys reads public keys off disk into a PublicKeys map
 func GetPublicKeys(gun string, filenames ...string) (PublicKeys, error) {
 	publicKeys := make(PublicKeys)

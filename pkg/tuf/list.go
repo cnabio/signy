@@ -1,9 +1,12 @@
 package tuf
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
+	"strings"
 
+	"github.com/cnabio/signy/pkg/intoto"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
@@ -27,30 +30,68 @@ func GetTargetWithRole(gun, targetName, trustServer, tlscacert, trustDir, timeou
 
 // VerifyInToto ensures that the in-toto root layout, pubkeys, and links match the TUF metadata
 func VerifyInTotoMetadata(gun, trustServer, tlscacert, trustDir, timeout string) error {
-	// TODO: get targets from releases
+	// get targets from releases
 	targets, err := GetTargets(gun, trustServer, tlscacert, trustDir, timeout, releasesRoleName)
 	if err != nil {
 		return fmt.Errorf("cannot list %v :%v", releasesRoleName, err)
 	}
-	// TODO:  verify that releases signs ONLY links
+
+	// verify that releases signs ONLY links
+	// the target paths entrusted to the delegatee
+	paths := getReleasesPathPattern(gun)
 	for _, target := range targets {
 		if target.Role.String() != releasesRoleName.String() {
 			return fmt.Errorf("expected %v but got :%v", releasesRoleName, target.Role.String())
 		}
-		// TODO: check the target name matches links
-		// TODO: check the hash and length matches
+		// check the target name matches links
+		match := false
+		for _, path := range paths {
+			if strings.HasPrefix(target.Name, path) {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return fmt.Errorf("%v does not match %v", target.Name, paths)
+		}
+		// check the hash and length matches
+		custom := intoto.Custom{}
+		custom.ReadRawMessage(target.Custom)
+		linkMeta, err := data.NewFileMeta(bytes.NewBuffer(custom.InToto.Data), data.NotaryDefaultHashes...)
+		if err != nil {
+			return err
+		}
+		if linkMeta.Length != target.Length {
+			return fmt.Errorf("%v has observed length %v but expected %v", target.Name, linkMeta.Length, target.Length)
+		}
+		err = data.CompareMultiHashes(linkMeta.Hashes, target.Hashes)
+		if err != nil {
+			return fmt.Errorf("%v has observed hashes %v but expected %v", target.Name, linkMeta.Hashes, target.Hashes)
+		}
 	}
 
-	// TODO: get targets from targets
+	// get targets from the top-level targets role
 	targets, err = GetTargets(gun, trustServer, tlscacert, trustDir, timeout)
 	if err != nil {
-		return fmt.Errorf("cannot list targets: %v", err)
+		return fmt.Errorf("cannot list %v :%v", data.CanonicalTargetsRole, err)
 	}
 	// TODO:  verify that targets signs ONLY layouts and pubkeys
 	for _, target := range targets {
-		if target.Name == targetName {
-			return target, nil
+		if target.Role.String() != data.CanonicalTargetsRole.String() {
+			return fmt.Errorf("expected %v but got :%v", data.CanonicalTargetsRole, target.Role.String())
 		}
+		// check the target name matches links
+		match := false
+		for _, path := range paths {
+			if strings.HasPrefix(target.Name, path) {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return fmt.Errorf("%v does not match %v", target.Name, paths)
+		}
+
 	}
 
 	return nil
