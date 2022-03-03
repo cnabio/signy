@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/cnabio/cnab-go v0.8.2-beta1
 	github.com/containerd/cgroups v1.0.1 // indirect
-	github.com/containerd/containerd v1.4.12
+	github.com/containerd/containerd v1.4.13
 	github.com/containerd/continuity v0.0.0-20190827140505-75bee3e2ccb6 // indirect
 	github.com/containerd/go-runc v1.0.0 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20210303052042-6bc126869bf4
