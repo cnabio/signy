@@ -60,7 +60,7 @@ ifndef HAS_GOLANGCI
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_VERSION)
 endif
 ifndef HAS_GOIMPORTS
-	go get -u golang.org/x/tools/cmd/goimports
+	go install golang.org/x/tools/cmd/goimports@latest
 endif
 
 .PHONY: e2e
