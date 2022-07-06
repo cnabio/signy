@@ -1,7 +1,7 @@
 # This file is described here:  https://help.github.com/en/articles/about-code-owners
 
 # Global Owners: These members are Core Maintainers of signy
-CODEOWNERS      @radu-matei @trishankatdatadog
-LICENSE         @radu-matei @trishankatdatadog
-CONTRIBUTING.md @radu-matei @trishankatdatadog
-GOVERNANCE.md   @radu-matei @trishankatdatadog
+CODEOWNERS      @radu-matei @trishankatdatadog @carolynvs
+LICENSE         @radu-matei @trishankatdatadog @carolynvs
+CONTRIBUTING.md @radu-matei @trishankatdatadog @carolynvs
+GOVERNANCE.md   @radu-matei @trishankatdatadog @carolynvs
