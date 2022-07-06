@@ -8,7 +8,7 @@ require (
 	github.com/cyberphone/json-canonicalization v0.0.0-20210303052042-6bc126869bf4
 	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017
 	github.com/docker/cnab-to-oci v0.3.0-beta4
-	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker v1.4.2-0.20191021213818-bebd8206285b
 	github.com/docker/go v1.5.1-1
 	github.com/hashicorp/go-version v1.2.0 // indirect
