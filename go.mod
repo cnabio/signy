@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/cnabio/cnab-go v0.8.2-beta1
-	github.com/containerd/containerd v1.5.13
+	github.com/containerd/containerd v1.5.16
 	github.com/cyberphone/json-canonicalization v0.0.0-20210303052042-6bc126869bf4
 	github.com/docker/cli v0.0.0-20191017083524-a8ff7f821017
 	github.com/docker/cnab-to-oci v0.3.0-beta4
