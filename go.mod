@@ -18,9 +18,9 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.4.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.1
 	github.com/theupdateframework/notary v0.6.1
-	google.golang.org/grpc v1.42.0 // indirect
+	google.golang.org/grpc v1.53.0 // indirect
 )
 
 replace github.com/in-toto/in-toto-golang => github.com/radu-matei/in-toto-golang v0.0.0-20210426203218-225046ac7465
